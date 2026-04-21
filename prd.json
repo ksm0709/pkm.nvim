@@ -1,0 +1,54 @@
+{
+  "project": "pkm.nvim",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Phase 1: Foundation & Health Check",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Directory structure exists: lua/pkm, plugin, doc",
+        "lua/pkm/init.lua implements a metatable-based lazy-loading module (Snacks pattern) and exposes a setup(opts) function",
+        "lua/pkm/health.lua implements a health check that verifies the 'pkm' CLI executable is in the user's $PATH",
+        "Basic user configuration structure is defined and merges correctly with user opts",
+        "Neovim plugin loads without errors"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Phase 2: Async CLI Bridge & Error Recovery",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "lua/pkm/cli.lua exists and uses vim.system for asynchronous command execution",
+        "CLI wrapper integrates with fidget.nvim or vim.notify for progress spinners (Saving..., Saved)",
+        "CLI wrapper implements Active Recovery: on non-zero exit code, it captures stderr",
+        "CLI wrapper exposes methods for core pkm commands: daily add, note add, search, tags search, note links"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Phase 3: Zero-Latency Scratch Buffer Capture",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "lua/pkm/capture.lua exists and can open a floating/split scratch buffer",
+        "Capture buffer explicitly sets filetype='markdown'",
+        "Saving/closing the buffer triggers an async call to cli.lua to write the content via pkm CLI",
+        "If async save fails, capture.lua automatically re-opens the scratch buffer with the drafted content and displays the error (Active Recovery)"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "Phase 4: Picker & Keymap Integration",
+      "priority": 4,
+      "passes": true,
+      "acceptanceCriteria": [
+        "plugin/pkm.lua exposes a :Pkm command and registers <LocalLeader>p... default keymaps",
+        "lua/pkm/picker.lua implements a Snacks.picker adapter for pkm search results, tags, and backlinks",
+        "Selecting an item in the picker opens the markdown file natively in Neovim",
+        "Optimistic Cache: Newly captured notes instantly appear in picker results without waiting for full index rebuilds"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+# pkm.nvim Progress Tracker
+
+## Goal
+Implement `pkm.nvim` following the Asynchronous Thin Client with Active Recovery architecture defined in `PLAN.md`.
+
+## Status
+- **US-001 (Foundation):** DONE
+- **US-002 (CLI Bridge):** DONE
+- **US-003 (Capture):** DONE
+- **US-004 (Picker/Keymaps):** DONE - `plugin/pkm.lua` and `lua/pkm/picker.lua` implemented with Snacks.picker. `blink.cmp` skeleton added.
+
+## Learnings & Patterns
+- Architecture: Strict thin client. `pkm` CLI handles all domain logic.
+- UX: Zero-latency via scratch buffers. Background saves via `vim.system`.
+- Recovery: If `vim.system` fails, auto-reopen scratch buffer with drafted text.
+- UI: Use `Snacks.picker` for lists, `fidget.nvim`/`noice.nvim` for spinners, `render-markdown.nvim` for rendering.
+- `init.lua` utilizes metatable `__index` intercept for lazy loading submodules, avoiding eager requires.
+- `capture.lua` utilizes `BufWriteCmd` for catching the save events and piping directly to `pkm.cli`.
+- `picker.lua` leverages JSON parsing from CLI outputs to populate `Snacks.picker` items dynamically.
