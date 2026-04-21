@@ -50,8 +50,8 @@ local function map(mode, lhs, rhs, desc)
   vim.keymap.set(mode, lhs, rhs, { desc = desc, silent = true })
 end
 
-map("n", "<LocalLeader>pd", function() require("pkm.capture").daily() end, "PKM Daily Note")
-map("n", "<LocalLeader>pn", function() require("pkm.capture").note() end, "PKM New Note")
-map("n", "<LocalLeader>ps", function() require("pkm.picker").search() end, "PKM Search")
-map("n", "<LocalLeader>pt", function() require("pkm.picker").tags() end, "PKM Tags")
-map("n", "<LocalLeader>pl", function() require("pkm.picker").links() end, "PKM Links")
+map("n", "<Leader>pd", function() require("pkm.capture").daily() end, "PKM Daily Note")
+map("n", "<Leader>pn", function() require("pkm.capture").note() end, "PKM New Note")
+map("n", "<Leader>ps", function() require("pkm.picker").search() end, "PKM Search")
+map("n", "<Leader>pt", function() require("pkm.picker").tags() end, "PKM Tags")
+map("n", "<Leader>pl", function() require("pkm.picker").links() end, "PKM Links")
