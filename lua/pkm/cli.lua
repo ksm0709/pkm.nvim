@@ -8,8 +8,13 @@ local pkm = require("pkm")
 ---@field stdout string Standard output
 ---@field stderr string Standard error
 
+---@class PkmCliOpts
+---@field notify_msg? string
+---@field on_success? fun(res: PkmCliResult)
+---@field on_error? fun(stderr: string, res: PkmCliResult)
+
 ---@param args string[] Arguments to pass to the pkm CLI
----@param opts? { notify_msg?: string, on_success?: fun(res: PkmCliResult), on_error?: fun(stderr: string, res: PkmCliResult) }
+---@param opts? PkmCliOpts
 local function exec_async(args, opts)
   opts = opts or {}
 
