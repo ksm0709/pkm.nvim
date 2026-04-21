@@ -1,0 +1,83 @@
+#!/bin/bash
+
+exec 1>&2
+
+if git diff --quiet HEAD; then
+    exit 0
+fi
+
+echo "Running quality gates..."
+
+DIRS=""
+[ -d "lua" ] && DIRS="$DIRS lua/"
+[ -d "plugin" ] && DIRS="$DIRS plugin/"
+
+if [ -n "$DIRS" ]; then
+    if ! command -v stylua &> /dev/null; then
+        echo "Error: stylua is not installed. Please install it (e.g., cargo install stylua)."
+        exit 2
+    fi
+
+    echo "Checking formatting..."
+    if ! stylua --check $DIRS 2>/dev/null; then
+        echo "Error: Formatting check failed. Run 'stylua $DIRS' to fix."
+        exit 2
+    fi
+
+    if ! command -v luacheck &> /dev/null; then
+        echo "Error: luacheck is not installed. Please install it (e.g., luarocks install luacheck)."
+        exit 2
+    fi
+
+    echo "Checking linting..."
+    if ! luacheck $DIRS 2>/dev/null; then
+        echo "Error: Linting check failed. Please fix the luacheck errors."
+        exit 2
+    fi
+fi
+
+if ! command -v busted &> /dev/null; then
+    echo "Error: busted is not installed. Please install it (e.g., luarocks install busted)."
+    exit 2
+fi
+
+if ! command -v luacov &> /dev/null; then
+    echo "Error: luacov is not installed. Please install it (e.g., luarocks install luacov)."
+    exit 2
+fi
+
+echo "Running tests..."
+if ! busted --coverage 2>/dev/null; then
+    echo "Error: Tests failed."
+    exit 2
+fi
+
+echo "Checking coverage..."
+luacov
+if [ -f luacov.report.out ]; then
+    COVERAGE=$(grep '^Total' luacov.report.out | awk '{print $NF}' | tr -d '%')
+    if [ -z "$COVERAGE" ]; then
+        echo "Error: Could not parse coverage from luacov.report.out."
+        exit 2
+    fi
+    
+    if awk "BEGIN {exit !($COVERAGE < 90.0)}"; then
+        echo "Error: Test coverage is ${COVERAGE}%, which is below the 90% threshold."
+        exit 2
+    fi
+else
+    echo "Error: luacov.report.out not found. Coverage could not be determined."
+    exit 2
+fi
+
+LUA_CHANGED=$(git diff HEAD --name-only | grep '\.lua$' || true)
+DOC_CHANGED=$(git diff HEAD --name-only | grep -E 'README\.md|doc/' || true)
+
+if [ -n "$LUA_CHANGED" ] && [ -z "$DOC_CHANGED" ]; then
+    echo "Error: Lua files were modified but no documentation (README.md or doc/) was updated."
+    echo "Please update the documentation to reflect your code changes."
+    exit 2
+fi
+
+echo "Code changes are present. All quality gates (lint, format, test) PASSED! If no new request has been submitted, commit and push the changes by yourself."
+exit 2
