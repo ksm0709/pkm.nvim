@@ -15,18 +15,22 @@ local function get_vault_dir()
 end
 
 local function resolve_path(vault_dir, filename)
-  if not vault_dir then return filename end
-  if filename:sub(1, 1) == "/" then return filename end
-  
+  if not vault_dir then
+    return filename
+  end
+  if filename:sub(1, 1) == "/" then
+    return filename
+  end
+
   local notes_path = vault_dir .. "/notes/" .. filename
   local daily_path = vault_dir .. "/daily/" .. filename
-  
+
   if vim.fn.filereadable(notes_path) == 1 then
     return notes_path
   elseif vim.fn.filereadable(daily_path) == 1 then
     return daily_path
   end
-  
+
   return filename
 end
 
@@ -87,7 +91,7 @@ function M.search(query)
           end
         end
       end
-      
+
       if not file_path then
         file_path = result.title .. ".md"
       end
@@ -128,7 +132,7 @@ function M.tags(pattern)
     for _, result in ipairs(parsed.results) do
       local file_path = resolve_path(vault_dir, result.path or (result.title .. ".md"))
       local tags_str = table.concat(result.tags or {}, ", ")
-      
+
       table.insert(items, {
         text = result.title,
         desc = "[" .. tags_str .. "]",
@@ -168,7 +172,7 @@ function M.links(title)
       local file_path = resolve_path(vault_dir, result.path or (result.title .. ".md"))
       local desc = result.description or ""
       desc = desc:gsub("\n", " ")
-      
+
       table.insert(items, {
         text = result.title,
         desc = desc,

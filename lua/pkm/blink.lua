@@ -20,7 +20,7 @@ function M:get_completions(context, callback)
   end
 
   local items = {}
-  
+
   callback({
     is_incomplete_forward = false,
     is_incomplete_backward = false,

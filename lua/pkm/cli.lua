@@ -12,13 +12,13 @@ local pkm = require("pkm")
 ---@param opts? { notify_msg?: string, on_success?: fun(res: PkmCliResult), on_error?: fun(stderr: string, res: PkmCliResult) }
 local function exec_async(args, opts)
   opts = opts or {}
-  
+
   local cmd = { "pkm" }
   if pkm.config.vault_dir then
     table.insert(cmd, "--vault")
     table.insert(cmd, pkm.config.vault_dir)
   end
-  
+
   vim.list_extend(cmd, args)
 
   local notify_id
