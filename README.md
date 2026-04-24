@@ -10,3 +10,4 @@
 - Fixed `pkm links` fast event crash by caching the buffer name synchronously
 - Fixed `snacks.picker` empty item crash by ensuring fallback text values
 - Disabled notifications in `snacks.picker` async finders to prevent silent crashes and improve UX
+- Fixed `snacks.picker` live search not updating by correctly reading `ctx.filter.search` instead of `pattern`

@@ -201,7 +201,7 @@ describe("pkm.picker", function()
     assert.are.equal("PKM Search", last_picker().title)
 
     local cb_items = {}
-    last_picker().finder({ filter = { pattern = "alpha" } })(function(item)
+    last_picker().finder({ filter = { search = "alpha" } })(function(item)
       table.insert(cb_items, item)
     end)
 
@@ -218,7 +218,7 @@ describe("pkm.picker", function()
     picker.tags()
     assert.are.equal("PKM Tags", last_picker().title)
     cb_items = {}
-    last_picker().finder({ filter = { pattern = "topic" } })(function(item)
+    last_picker().finder({ filter = { search = "topic" } })(function(item)
       table.insert(cb_items, item)
     end)
 
@@ -232,7 +232,7 @@ describe("pkm.picker", function()
     picker.links("Some Title")
     assert.are.equal("PKM Links", last_picker().title)
     cb_items = {}
-    last_picker().finder({ filter = { pattern = "" } })(function(item)
+    last_picker().finder({ filter = { search = "" } })(function(item)
       table.insert(cb_items, item)
     end)
 

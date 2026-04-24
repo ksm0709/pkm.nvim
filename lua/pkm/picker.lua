@@ -148,7 +148,7 @@ function M.search()
     supports_live = true,
     finder = function(opts, ctx)
       ctx = ctx or opts
-      local pattern = ctx.filter.pattern
+      local pattern = ctx.filter.search
       return function(cb)
         if pattern == "" then
           return
@@ -197,7 +197,7 @@ function M.tags()
     supports_live = true,
     finder = function(opts, ctx)
       ctx = ctx or opts
-      local pattern = ctx.filter.pattern
+      local pattern = ctx.filter.search
       return function(cb)
         if pattern == "" then
           return
@@ -245,7 +245,7 @@ function M.links(title)
     supports_live = true,
     finder = function(opts, ctx)
       ctx = ctx or opts
-      local pattern = ctx.filter.pattern
+      local pattern = ctx.filter.search
       return function(cb)
         if pattern == "" then
           pattern = title
