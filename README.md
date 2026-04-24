@@ -8,3 +8,4 @@
 - Fixed `snacks.picker` finder crash by removing empty table callbacks and adding async handling
 - Removed deprecated `.bak` workflow roots from `pkm workflows` picker
 - Fixed `pkm links` fast event crash by caching the buffer name synchronously
+- Fixed `snacks.picker` empty item crash by ensuring fallback text values

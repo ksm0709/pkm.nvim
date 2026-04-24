@@ -214,7 +214,7 @@ function M.tags()
             for _, result in ipairs(parsed.results) do
               local tags_str = table.concat(result.tags or {}, ", ")
               cb({
-                text = result.title,
+                text = result.title or result.note_id or "(untitled)",
                 desc = "[" .. tags_str .. "]",
                 file = note_path_from_result(result),
               })
@@ -271,7 +271,7 @@ function M.links(title)
               local desc = result.description or ""
               desc = util.normalize_output(desc):gsub("\n", " ")
               cb({
-                text = result.title,
+                text = result.title or result.note_id or "(untitled)",
                 desc = desc,
                 file = note_path_from_result(result),
               })
