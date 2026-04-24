@@ -12,9 +12,13 @@ Thumbs.db
 luac.out
 .netrwhist
 *~
+.rocks/
+luacov.report.out
+luacov.stats.out
 
 # Editor / IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+.omx/

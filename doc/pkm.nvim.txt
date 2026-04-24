@@ -1,0 +1,44 @@
+*pkm.nvim.txt*                                  pkm.nvim quality and keymaps
+
+==============================================================================
+CONTENTS                                                *pkm-nvim-contents*
+
+1. Quality Toolchain ......................................... |pkm-nvim-qc|
+2. Keymaps .................................................... |pkm-nvim-m|
+
+==============================================================================
+1. Quality Toolchain                                         *pkm-nvim-qc*
+
+The repository uses a local Lua quality toolchain for automated checks:
+
+- `stylua --check lua plugin spec`
+- `./.rocks/bin/luacheck lua plugin spec`
+- `./.rocks/bin/busted --helper spec/spec_helper.lua --coverage spec`
+- `./.rocks/bin/luacov`
+
+The stop hook under `.codex/hooks/stop.sh` enforces:
+
+- formatting
+- lint
+- tests
+- coverage >= 90% on the configured unit-test surface
+- documentation updates when Lua or plugin files change
+
+==============================================================================
+2. Keymaps                                                    *pkm-nvim-m*
+
+The plugin exposes these default mappings:
+
+- `<Leader>pd` open today's daily note
+- `<Leader>pD` create a daily sub-note
+- `<Leader>pv` switch vaults
+- `<Leader>pa` toggle the chat window
+- `<Leader>pw` run a workflow
+- `<Leader>pg` grep inside the current vault
+- `<Leader>pf` search files inside the current vault
+- `<Leader>pi` refresh the vault index
+- `<Leader>ps` semantic search picker
+- `<Leader>pt` tag search
+- `<Leader>pl` backlinks picker
+
+vim:tw=78:ts=8:noet:ft=help:norl:

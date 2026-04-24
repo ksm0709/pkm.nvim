@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.codex/hooks/stop.sh\"",
+            "timeout": 120,
+            "statusMessage": "Running quality gates..."
+          }
+        ]
+      }
+    ]
+  }
+}

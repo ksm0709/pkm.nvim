@@ -7,7 +7,10 @@
     "doc": "doc"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "format:check": "PATH=\"$PWD/.rocks/bin:$HOME/.cargo/bin:$PATH\" stylua --check lua plugin spec",
+    "lint": "PATH=\"$PWD/.rocks/bin:$HOME/.cargo/bin:$PATH\" ./.rocks/bin/luacheck lua plugin spec",
+    "test": "PATH=\"$PWD/.rocks/bin:$HOME/.cargo/bin:$PATH\" ./.rocks/bin/busted --helper spec/spec_helper.lua spec",
+    "coverage": "rm -f luacov.report.out luacov.stats.out && PATH=\"$PWD/.rocks/bin:$HOME/.cargo/bin:$PATH\" ./.rocks/bin/busted --helper spec/spec_helper.lua --coverage spec && PATH=\"$PWD/.rocks/bin:$HOME/.cargo/bin:$PATH\" ./.rocks/bin/luacov && grep '^Total' luacov.report.out",
     "release": "standard-version",
     "prepare": "husky"
   },

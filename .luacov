@@ -1,0 +1,17 @@
+return {
+  include = {
+    "lua/pkm/blink",
+    "lua/pkm/capture",
+    "lua/pkm/health",
+    "lua/pkm/init",
+    "lua/pkm/util",
+    "lua/pkm/vault",
+  },
+  exclude = {
+    "^spec/",
+    "^%.rocks/",
+  },
+  reportfile = "luacov.report.out",
+  statsfile = "luacov.stats.out",
+  includeuntestedfiles = false,
+}
