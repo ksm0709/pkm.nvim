@@ -206,10 +206,10 @@ describe("pkm.picker", function()
     last_picker().finder({ filter = { pattern = "alpha" } })(function(items)
       cb_items = items
     end)
-    
+
     assert.are.equal("/tmp/note-a.md", cb_items[1].file)
     assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a/notes/note-b.md", cb_items[2].file)
-    
+
     last_picker().actions.confirm({
       close = function()
         state.picker_closed = true
@@ -222,7 +222,7 @@ describe("pkm.picker", function()
     last_picker().finder({ filter = { pattern = "topic" } })(function(items)
       cb_items = items
     end)
-    
+
     last_picker().actions.confirm({
       close = function()
         state.picker_closed = true
@@ -235,7 +235,7 @@ describe("pkm.picker", function()
     last_picker().finder({ filter = { pattern = "" } })(function(items)
       cb_items = items
     end)
-    
+
     last_picker().actions.confirm({
       close = function()
         state.picker_closed = true

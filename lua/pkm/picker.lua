@@ -147,7 +147,8 @@ function M.search()
   snacks.picker({
     title = "PKM Search",
     supports_live = true,
-    finder = function(ctx)
+    finder = function(opts, ctx)
+      ctx = ctx or opts
       local pattern = ctx.filter.pattern
       return function(cb)
         if pattern == "" then
@@ -187,7 +188,8 @@ function M.tags()
   snacks.picker({
     title = "PKM Tags",
     supports_live = true,
-    finder = function(ctx)
+    finder = function(opts, ctx)
+      ctx = ctx or opts
       local pattern = ctx.filter.pattern
       return function(cb)
         if pattern == "" then
@@ -230,7 +232,8 @@ function M.links(title)
   snacks.picker({
     title = "PKM Links",
     supports_live = true,
-    finder = function(ctx)
+    finder = function(opts, ctx)
+      ctx = ctx or opts
       local pattern = ctx.filter.pattern
       return function(cb)
         if pattern == "" then
