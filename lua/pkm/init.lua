@@ -31,11 +31,22 @@ function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", default_config, opts or {})
 end
 
+local _statusline_fetching = false
+
 function M.statusline()
-  local vault = require("pkm.vault").get()
+  local vault = require("pkm.vault").current
   if vault and vault.name then
-    return vault.name
+    return "󰠮 " .. vault.name
   end
+
+  if not _statusline_fetching then
+    _statusline_fetching = true
+    vim.schedule(function()
+      require("pkm.vault").get()
+      vim.cmd("redrawstatus")
+    end)
+  end
+
   return ""
 end
 

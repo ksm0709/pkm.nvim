@@ -199,22 +199,48 @@ describe("pkm.picker", function()
   end
 
   it("builds search, tags, links, file, and grep pickers", function()
-    picker.search("alpha")
-    assert.are.equal("PKM Search: alpha", last_picker().title)
-    assert.are.equal("/tmp/note-a.md", last_picker().items[1].file)
-    assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a/notes/note-b.md", last_picker().items[2].file)
-    confirm_last(1)
+    picker.search()
+    assert.are.equal("PKM Search", last_picker().title)
+
+    local cb_items = nil
+    last_picker().finder({ filter = { pattern = "alpha" } }, function(items)
+      cb_items = items
+    end)
+
+    assert.are.equal("/tmp/note-a.md", cb_items[1].file)
+    assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a/notes/note-b.md", cb_items[2].file)
+
+    last_picker().actions.confirm({
+      close = function()
+        state.picker_closed = true
+      end,
+    }, cb_items[1])
     assert.are.equal("edit /tmp/note-a.md", state.commands[#state.commands])
 
-    picker.tags("topic")
-    assert.are.equal("PKM Tags: topic", last_picker().title)
-    confirm_last(1)
+    picker.tags()
+    assert.are.equal("PKM Tags", last_picker().title)
+    last_picker().finder({ filter = { pattern = "topic" } }, function(items)
+      cb_items = items
+    end)
+
+    last_picker().actions.confirm({
+      close = function()
+        state.picker_closed = true
+      end,
+    }, cb_items[1])
     assert.are.equal("edit /tmp/tag-note.md", state.commands[#state.commands])
 
-    picker.links()
-    assert.is_true(last_picker().title:find("PKM Links:", 1, true) ~= nil)
-    assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a/notes/backlink.md", last_picker().items[1].file)
-    confirm_last(1)
+    picker.links("Some Title")
+    assert.are.equal("PKM Links", last_picker().title)
+    last_picker().finder({ filter = { pattern = "" } }, function(items)
+      cb_items = items
+    end)
+
+    last_picker().actions.confirm({
+      close = function()
+        state.picker_closed = true
+      end,
+    }, cb_items[1])
     assert.are.equal("edit /tmp/pkm-test-vaults/temp-vault-a/notes/backlink.md", state.commands[#state.commands])
 
     picker.files()
@@ -226,10 +252,6 @@ describe("pkm.picker", function()
   end)
 
   it("covers prompt paths, daily actions, vault switching, workflows, and chat toggle", function()
-    state.inputs = { "prompted search" }
-    picker.search()
-    assert.are.equal("prompted search", state.search_query)
-
     picker.daily_open()
     assert.are.equal("TEMP_VAULT_A", state.open_daily_target.name)
 

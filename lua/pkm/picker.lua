@@ -142,100 +142,135 @@ local function build_result_items(results)
   return items
 end
 
-function M.search(query)
-  if not query or query == "" then
-    prompt("PKM Search", function(input)
-      M.search(input)
-    end)
-    return
-  end
-
-  cli.search(query, function(res)
-    local parsed = util.json_decode(res.stdout)
-    if not parsed or not parsed.results then
-      util.notify("Failed to parse search results", vim.log.levels.ERROR)
-      return
-    end
-
-    snacks_picker("PKM Search: " .. query, build_result_items(parsed.results), {
+function M.search()
+  local snacks = require("snacks")
+  snacks.picker({
+    title = "PKM Search",
+    supports_live = true,
+    finder = function(ctx, cb)
+      local pattern = ctx.filter.pattern
+      if pattern == "" then
+        cb({})
+        return
+      end
+      cli.search(pattern, function(res)
+        local parsed = util.json_decode(res.stdout)
+        if not parsed or not parsed.results then
+          cb({})
+          return
+        end
+        cb(build_result_items(parsed.results))
+      end)
+    end,
+    format = function(item)
+      local text = { { item.text or "", "Normal" } }
+      if item.desc and item.desc ~= "" then
+        table.insert(text, { " " .. item.desc, "Comment" })
+      end
+      return text
+    end,
+    actions = {
       confirm = function(picker, item)
         picker:close()
         if item and item.file then
           open_path(item.file)
         end
       end,
-    }, function(item)
-      local text = { { item.text or "", "Normal" } }
-      if item.desc and item.desc ~= "" then
-        table.insert(text, { " " .. item.desc, "Comment" })
-      end
-      return text
-    end)
-  end)
+    },
+  })
 end
 
-function M.tags(pattern)
-  if not pattern or pattern == "" then
-    prompt("PKM Tags Search", function(input)
-      M.tags(input)
-    end)
-    return
-  end
+function M.tags()
+  local snacks = require("snacks")
+  snacks.picker({
+    title = "PKM Tags",
+    supports_live = true,
+    finder = function(ctx, cb)
+      local pattern = ctx.filter.pattern
+      if pattern == "" then
+        cb({})
+        return
+      end
+      cli.tags_search(pattern, function(res)
+        local parsed = util.json_decode(res.stdout)
+        if not parsed or not parsed.results then
+          cb({})
+          return
+        end
 
-  cli.tags_search(pattern, function(res)
-    local parsed = util.json_decode(res.stdout)
-    if not parsed or not parsed.results then
-      util.notify("Failed to parse tags search results", vim.log.levels.ERROR)
-      return
-    end
-
-    local items = {}
-    for _, result in ipairs(parsed.results) do
-      local tags_str = table.concat(result.tags or {}, ", ")
-      table.insert(items, {
-        text = result.title,
-        desc = "[" .. tags_str .. "]",
-        file = note_path_from_result(result),
-      })
-    end
-
-    snacks_picker("PKM Tags: " .. pattern, items)
-  end)
+        local items = {}
+        for _, result in ipairs(parsed.results) do
+          local tags_str = table.concat(result.tags or {}, ", ")
+          table.insert(items, {
+            text = result.title,
+            desc = "[" .. tags_str .. "]",
+            file = note_path_from_result(result),
+          })
+        end
+        cb(items)
+      end)
+    end,
+    actions = {
+      confirm = function(picker, item)
+        picker:close()
+        if item and item.file then
+          open_path(item.file)
+        end
+      end,
+    },
+  })
 end
 
 function M.links(title)
-  if not title or title == "" then
-    local buf_name = vim.api.nvim_buf_get_name(0)
-    if buf_name ~= "" then
-      title = vim.fn.fnamemodify(buf_name, ":t:r")
-    else
-      prompt("PKM Links for Note", function(input)
-        M.links(input)
+  local snacks = require("snacks")
+  snacks.picker({
+    title = "PKM Links",
+    supports_live = true,
+    finder = function(ctx, cb)
+      local pattern = ctx.filter.pattern
+      if pattern == "" then
+        pattern = title
+      end
+
+      if not pattern or pattern == "" then
+        local buf_name = vim.api.nvim_buf_get_name(0)
+        if buf_name ~= "" then
+          pattern = vim.fn.fnamemodify(buf_name, ":t:r")
+        else
+          cb({})
+          return
+        end
+      end
+
+      cli.note_links(pattern, function(res)
+        local parsed = util.json_decode(res.stdout)
+        if not parsed or not parsed.backlinks then
+          cb({})
+          return
+        end
+
+        local items = {}
+        for _, result in ipairs(parsed.backlinks) do
+          local desc = result.description or ""
+          desc = util.normalize_output(desc):gsub("\n", " ")
+          table.insert(items, {
+            text = result.title,
+            desc = desc,
+            file = note_path_from_result(result),
+          })
+        end
+        cb(items)
       end)
-      return
-    end
-  end
-
-  cli.note_links(title, function(res)
-    local parsed = util.json_decode(res.stdout)
-    if not parsed or not parsed.backlinks then
-      util.notify("Failed to parse note links results", vim.log.levels.ERROR)
-      return
-    end
-
-    local items = {}
-    for _, result in ipairs(parsed.backlinks) do
-      local desc = result.description or ""
-      desc = util.normalize_output(desc):gsub("\n", " ")
-      table.insert(items, {
-        text = result.title,
-        desc = desc,
-        file = note_path_from_result(result),
-      })
-    end
-
-    snacks_picker("PKM Links: " .. title, items)
-  end)
+    end,
+    actions = {
+      confirm = function(picker, item)
+        picker:close()
+        if item and item.file then
+          open_path(item.file)
+        end
+      end,
+    },
+  })
 end
 
 function M.vaults()

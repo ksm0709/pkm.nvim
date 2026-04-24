@@ -147,12 +147,16 @@ local function exec_async(args, opts)
 end
 
 local function collect_stream(data)
-  local text = table.concat(
-    vim.tbl_filter(function(value)
-      return value ~= nil and value ~= ""
-    end, data or {}),
-    "\n"
-  )
+  if not data or #data == 0 then
+    return ""
+  end
+  local valid_data = {}
+  for _, value in ipairs(data) do
+    if value ~= nil then
+      table.insert(valid_data, value)
+    end
+  end
+  local text = table.concat(valid_data, "\n")
   return util.normalize_output(text)
 end
 

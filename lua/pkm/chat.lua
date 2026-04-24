@@ -10,6 +10,8 @@ local state = {
   stdout_win = nil,
   input_buf = nil,
   input_win = nil,
+  thinking = false,
+  separator_inserted = false,
 }
 
 local function valid_win(win)
@@ -31,12 +33,41 @@ local function append_text(buf, text)
   if not valid_buf(buf) or not text or text == "" then
     return
   end
+
   vim.bo[buf].modifiable = true
-  local lines = vim.split(text, "\n", { plain = true })
-  local line_count = vim.api.nvim_buf_line_count(buf)
-  local last_line = vim.api.nvim_buf_get_lines(buf, line_count - 1, line_count, false)[1]
-  local last_col = #last_line
-  vim.api.nvim_buf_set_text(buf, line_count - 1, last_col, line_count - 1, last_col, lines)
+
+  if state.thinking and not state.separator_inserted then
+    local is_work = text:match("%s*↳") or text:match("%[thinking%]") or text:match("Asking daemon")
+    if not is_work and text:match("%S") then
+      state.separator_inserted = true
+      state.thinking = false
+
+      local line_count = vim.api.nvim_buf_line_count(buf)
+      vim.api.nvim_buf_set_lines(buf, line_count, line_count, false, { "", "---", "" })
+    end
+  end
+
+  local segments = vim.split(text, "\r", { plain = true })
+
+  for i, segment in ipairs(segments) do
+    local line_count = vim.api.nvim_buf_line_count(buf)
+
+    if i > 1 then
+      vim.api.nvim_buf_set_lines(buf, line_count - 1, line_count, false, { "" })
+    end
+
+    if segment ~= "" then
+      local last_line = vim.api.nvim_buf_get_lines(buf, line_count - 1, line_count, false)[1]
+      local last_col = #last_line
+      local lines = vim.split(segment, "\n", { plain = true })
+      vim.api.nvim_buf_set_text(buf, line_count - 1, last_col, line_count - 1, last_col, lines)
+    end
+  end
+
+  if valid_win(state.stdout_win) then
+    vim.api.nvim_win_set_cursor(state.stdout_win, { vim.api.nvim_buf_line_count(buf), 0 })
+  end
+
   vim.bo[buf].modifiable = false
 end
 
@@ -67,6 +98,8 @@ local function run_stream(args, title)
   local current = vault.get()
   local vault_name = current and current.name or nil
 
+  state.thinking = true
+  state.separator_inserted = false
   append_text(state.stdout_buf, ("\n$ pkm %s\n"):format(table.concat(args, " ")))
 
   cli.stream(args, {
