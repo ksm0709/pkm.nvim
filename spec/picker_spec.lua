@@ -147,6 +147,14 @@ describe("pkm.picker", function()
         end,
       }),
     }
+    package.loaded["snacks.picker.util.async"] = {
+      running = function()
+        return {
+          suspend = function() end,
+          resume = function() end,
+        }
+      end,
+    }
 
     state.system_handler = function(cmd)
       local line = table.concat(cmd, " ")
@@ -202,9 +210,9 @@ describe("pkm.picker", function()
     picker.search()
     assert.are.equal("PKM Search", last_picker().title)
 
-    local cb_items = nil
-    last_picker().finder({ filter = { pattern = "alpha" } })(function(items)
-      cb_items = items
+    local cb_items = {}
+    last_picker().finder({ filter = { pattern = "alpha" } })(function(item)
+      table.insert(cb_items, item)
     end)
 
     assert.are.equal("/tmp/note-a.md", cb_items[1].file)
@@ -219,8 +227,9 @@ describe("pkm.picker", function()
 
     picker.tags()
     assert.are.equal("PKM Tags", last_picker().title)
-    last_picker().finder({ filter = { pattern = "topic" } })(function(items)
-      cb_items = items
+    cb_items = {}
+    last_picker().finder({ filter = { pattern = "topic" } })(function(item)
+      table.insert(cb_items, item)
     end)
 
     last_picker().actions.confirm({
@@ -232,8 +241,9 @@ describe("pkm.picker", function()
 
     picker.links("Some Title")
     assert.are.equal("PKM Links", last_picker().title)
-    last_picker().finder({ filter = { pattern = "" } })(function(items)
-      cb_items = items
+    cb_items = {}
+    last_picker().finder({ filter = { pattern = "" } })(function(item)
+      table.insert(cb_items, item)
     end)
 
     last_picker().actions.confirm({

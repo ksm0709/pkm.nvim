@@ -152,16 +152,24 @@ function M.search()
       local pattern = ctx.filter.pattern
       return function(cb)
         if pattern == "" then
-          cb({})
           return
         end
+
+        local async = require("snacks.picker.util.async").running()
+        if async then
+          async:suspend()
+        end
+
         cli.search(pattern, function(res)
           local parsed = util.json_decode(res.stdout)
-          if not parsed or not parsed.results then
-            cb({})
-            return
+          if parsed and parsed.results then
+            for _, item in ipairs(build_result_items(parsed.results)) do
+              cb(item)
+            end
           end
-          cb(build_result_items(parsed.results))
+          if async then
+            async:resume()
+          end
         end)
       end
     end,
@@ -193,26 +201,29 @@ function M.tags()
       local pattern = ctx.filter.pattern
       return function(cb)
         if pattern == "" then
-          cb({})
           return
         end
+
+        local async = require("snacks.picker.util.async").running()
+        if async then
+          async:suspend()
+        end
+
         cli.tags_search(pattern, function(res)
           local parsed = util.json_decode(res.stdout)
-          if not parsed or not parsed.results then
-            cb({})
-            return
+          if parsed and parsed.results then
+            for _, result in ipairs(parsed.results) do
+              local tags_str = table.concat(result.tags or {}, ", ")
+              cb({
+                text = result.title,
+                desc = "[" .. tags_str .. "]",
+                file = note_path_from_result(result),
+              })
+            end
           end
-
-          local items = {}
-          for _, result in ipairs(parsed.results) do
-            local tags_str = table.concat(result.tags or {}, ", ")
-            table.insert(items, {
-              text = result.title,
-              desc = "[" .. tags_str .. "]",
-              file = note_path_from_result(result),
-            })
+          if async then
+            async:resume()
           end
-          cb(items)
         end)
       end
     end,
@@ -245,29 +256,31 @@ function M.links(title)
           if buf_name ~= "" then
             pattern = vim.fn.fnamemodify(buf_name, ":t:r")
           else
-            cb({})
             return
           end
         end
 
+        local async = require("snacks.picker.util.async").running()
+        if async then
+          async:suspend()
+        end
+
         cli.note_links(pattern, function(res)
           local parsed = util.json_decode(res.stdout)
-          if not parsed or not parsed.backlinks then
-            cb({})
-            return
+          if parsed and parsed.backlinks then
+            for _, result in ipairs(parsed.backlinks) do
+              local desc = result.description or ""
+              desc = util.normalize_output(desc):gsub("\n", " ")
+              cb({
+                text = result.title,
+                desc = desc,
+                file = note_path_from_result(result),
+              })
+            end
           end
-
-          local items = {}
-          for _, result in ipairs(parsed.backlinks) do
-            local desc = result.description or ""
-            desc = util.normalize_output(desc):gsub("\n", " ")
-            table.insert(items, {
-              text = result.title,
-              desc = desc,
-              file = note_path_from_result(result),
-            })
+          if async then
+            async:resume()
           end
-          cb(items)
         end)
       end
     end,

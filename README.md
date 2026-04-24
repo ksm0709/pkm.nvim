@@ -5,3 +5,4 @@
 - Ensured markdown rendering works immediately upon opening the chat buffer
 - Made `require('pkm').statusline()` non-blocking to prevent UI freezes
 - Fixed `snacks.picker` async finder integration to prevent `filter` nil errors
+- Fixed `snacks.picker` finder crash by removing empty table callbacks and adding async handling
