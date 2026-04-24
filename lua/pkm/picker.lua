@@ -162,21 +162,27 @@ function M.search()
         end
 
         local async = require("snacks.picker.util.async").running()
+        local results = nil
+
+        cli.search(pattern, function(res)
+          results = res
+          if async then
+            async:resume()
+          end
+        end, nil, { notify_msg = false })
+
         if async then
           async:suspend()
         end
 
-        cli.search(pattern, function(res)
-          local parsed = util.json_decode(res.stdout)
+        if results then
+          local parsed = util.json_decode(results.stdout)
           if parsed and parsed.results then
             for _, item in ipairs(build_result_items(parsed.results)) do
               cb(item)
             end
           end
-          if async then
-            async:resume()
-          end
-        end, nil, { notify_msg = false })
+        end
       end
     end,
     format = function(item)
@@ -218,12 +224,21 @@ function M.tags()
         end
 
         local async = require("snacks.picker.util.async").running()
+        local results = nil
+
+        cli.tags_search(pattern, function(res)
+          results = res
+          if async then
+            async:resume()
+          end
+        end, nil, { notify_msg = false })
+
         if async then
           async:suspend()
         end
 
-        cli.tags_search(pattern, function(res)
-          local parsed = util.json_decode(res.stdout)
+        if results then
+          local parsed = util.json_decode(results.stdout)
           if parsed and parsed.results then
             for _, result in ipairs(parsed.results) do
               local tags_str = table.concat(result.tags or {}, ", ")
@@ -234,10 +249,7 @@ function M.tags()
               })
             end
           end
-          if async then
-            async:resume()
-          end
-        end, nil, { notify_msg = false })
+        end
       end
     end,
     actions = {
@@ -281,12 +293,21 @@ function M.links(title)
         end
 
         local async = require("snacks.picker.util.async").running()
+        local results = nil
+
+        cli.note_links(pattern, function(res)
+          results = res
+          if async then
+            async:resume()
+          end
+        end, nil, { notify_msg = false })
+
         if async then
           async:suspend()
         end
 
-        cli.note_links(pattern, function(res)
-          local parsed = util.json_decode(res.stdout)
+        if results then
+          local parsed = util.json_decode(results.stdout)
           if parsed and parsed.backlinks then
             for _, result in ipairs(parsed.backlinks) do
               local desc = result.description or ""
@@ -298,10 +319,7 @@ function M.links(title)
               })
             end
           end
-          if async then
-            async:resume()
-          end
-        end, nil, { notify_msg = false })
+        end
       end
     end,
     actions = {
