@@ -15,4 +15,5 @@
 - Improved robustness of async finders in `pkm search`, `tags`, and `links` by extracting pattern gracefully from any signature variant
 - Fixed `snacks.picker` async finder deadlock in `search`, `tags`, and `links` by correctly suspending/resuming coroutines
 - Resolved implicit E5560 fast event crash by querying active vault synchronously before passing it to asynchronous `pkm.cli` finder calls
+- Fixed CLI positional argument handling by inserting `--` to prevent flag misinterpretation
 - Updated `<leader>ps` to support searching with cursor word or visual selection

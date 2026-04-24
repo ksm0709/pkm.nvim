@@ -62,14 +62,17 @@ describe("pkm.cli", function()
     cli.daemon_status()
 
     local calls = non_lookup_commands()
-    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "daily", "add", "entry" }, calls[1].cmd)
-    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "daily", "add", "--sub", "sub" }, calls[2].cmd)
-    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "note", "add", "Title", "--content", "body" }, calls[3].cmd)
-    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "search", "query" }, calls[4].cmd)
-    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "note", "search", "query" }, calls[5].cmd)
-    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "note", "show", "query" }, calls[6].cmd)
-    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "tags", "search", "tag" }, calls[7].cmd)
-    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "note", "links", "note" }, calls[8].cmd)
+    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "daily", "add", "--", "entry" }, calls[1].cmd)
+    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "daily", "add", "--sub", "--", "sub" }, calls[2].cmd)
+    assert.are.same(
+      { "pkm", "--vault", "TEMP_VAULT_A", "note", "add", "--", "Title", "--content", "body" },
+      calls[3].cmd
+    )
+    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "search", "--", "query" }, calls[4].cmd)
+    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "note", "search", "--", "query" }, calls[5].cmd)
+    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "note", "show", "--", "query" }, calls[6].cmd)
+    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "tags", "search", "--", "tag" }, calls[7].cmd)
+    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "note", "links", "--", "note" }, calls[8].cmd)
     assert.are.same({ "pkm", "vault", "open", "vault" }, calls[9].cmd)
     assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "daemon", "start" }, calls[10].cmd)
     assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "daemon", "status" }, calls[11].cmd)
@@ -105,7 +108,7 @@ describe("pkm.cli", function()
 
   it("streams commands and handles job failures", function()
     state.job_handler = function(cmd, opts)
-      if join(cmd) == "pkm ask hello" then
+      if join(cmd) == "pkm ask -- hello" then
         if opts.on_stdout then
           opts.on_stdout(nil, { "chunk" }, nil)
         end
@@ -150,6 +153,6 @@ describe("pkm.cli", function()
     assert.are.same({ "warn" }, stderr)
     assert.are.same({ 0 }, exits)
     assert.is_true(error_seen)
-    assert.are.same({ "pkm", "ask", "hello" }, state.job_calls[1].cmd)
+    assert.are.same({ "pkm", "ask", "--", "hello" }, state.job_calls[1].cmd)
   end)
 end)

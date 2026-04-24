@@ -280,7 +280,7 @@ end
 
 function M.daily_add(content, on_success, on_error, opts)
   exec_async(
-    { "daily", "add", content },
+    { "daily", "add", "--", content },
     vim.tbl_extend("force", {
       notify_msg = "Saving daily note...",
       on_success = on_success,
@@ -291,7 +291,7 @@ end
 
 function M.daily_sub(title, on_success, on_error, opts)
   exec_async(
-    { "daily", "add", "--sub", title },
+    { "daily", "add", "--sub", "--", title },
     vim.tbl_extend("force", {
       notify_msg = "Creating daily sub-note...",
       on_success = on_success,
@@ -303,6 +303,7 @@ end
 function M.note_add(title, content, on_success, on_error, opts)
   local args = { "note", "add" }
   if title and title ~= "" then
+    table.insert(args, "--")
     table.insert(args, title)
   end
   if content and content ~= "" then
@@ -322,7 +323,7 @@ end
 
 function M.search(query, on_success, on_error, opts)
   exec_async(
-    { "search", query },
+    { "search", "--", query },
     vim.tbl_extend("force", {
       notify_msg = "Searching...",
       on_success = on_success,
@@ -333,7 +334,7 @@ end
 
 function M.note_search(query, on_success, on_error, opts)
   exec_async(
-    { "note", "search", query },
+    { "note", "search", "--", query },
     vim.tbl_extend("force", {
       notify_msg = "Searching notes...",
       on_success = on_success,
@@ -344,7 +345,7 @@ end
 
 function M.note_show(query, on_success, on_error, opts)
   exec_async(
-    { "note", "show", query },
+    { "note", "show", "--", query },
     vim.tbl_extend("force", {
       notify_msg = "Loading note...",
       on_success = on_success,
@@ -355,7 +356,7 @@ end
 
 function M.tags_search(pattern, on_success, on_error, opts)
   exec_async(
-    { "tags", "search", pattern },
+    { "tags", "search", "--", pattern },
     vim.tbl_extend("force", {
       notify_msg = "Searching tags...",
       on_success = on_success,
@@ -366,7 +367,7 @@ end
 
 function M.note_links(title, on_success, on_error, opts)
   exec_async(
-    { "note", "links", title },
+    { "note", "links", "--", title },
     vim.tbl_extend("force", {
       notify_msg = "Finding links...",
       on_success = on_success,
@@ -377,7 +378,7 @@ end
 
 function M.graph_neighbors(note_id, on_success, on_error, opts)
   exec_async(
-    { "graph", "neighbors", note_id, "--semantic", "--format", "json" },
+    { "graph", "neighbors", "--semantic", "--format", "json", "--", note_id },
     vim.tbl_extend("force", {
       notify_msg = false,
       on_success = on_success,
@@ -389,7 +390,7 @@ end
 function M.ask_stream(query, handlers, opts)
   handlers = handlers or {}
   return exec_stream(
-    { "ask", query },
+    { "ask", "--", query },
     vim.tbl_extend("force", {
       on_stdout = handlers.on_stdout,
       on_stderr = handlers.on_stderr,
