@@ -141,12 +141,13 @@ local function build_result_items(results)
   return items
 end
 
-function M.search()
+function M.search(query)
   local snacks = require("snacks")
   local current = current_vault()
   local vault_name = current and current.name or nil
   snacks.picker({
     title = "PKM Search",
+    search = query,
     supports_live = true,
     live = true,
     finder = function(opts, ctx)
