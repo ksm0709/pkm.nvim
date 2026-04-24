@@ -17,3 +17,4 @@
 - Resolved implicit E5560 fast event crash by querying active vault synchronously before passing it to asynchronous `pkm.cli` finder calls
 - Fixed CLI positional argument handling by inserting `--` to prevent flag misinterpretation
 - Updated `<leader>ps` to support searching with cursor word or visual selection
+- Added `file` property to `pkm links` picker items to fix missing file crash and enable preview

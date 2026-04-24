@@ -295,11 +295,24 @@ function M.links(title)
 
     local items = {}
     local function add_nodes(nodes, direction)
+      local v_path = ensure_vault_path()
       for _, node in ipairs(nodes or {}) do
         -- extract info
         local name = node.title or node.note_id
         if node.type == "tag" then
           name = name:gsub("^tag:", "")
+        end
+
+        local file_path = ""
+        if node.type == "tag" then
+          file_path = util.join_path(v_path, "tags", name .. ".md")
+        elseif node.type == "note_or_unresolved" or node.type == "note" then
+          local daily_path = util.join_path(v_path, "daily", name .. ".md")
+          if util.file_exists(daily_path) then
+            file_path = daily_path
+          else
+            file_path = util.join_path(v_path, "notes", util.slugify(name) .. ".md")
+          end
         end
 
         table.insert(items, {
@@ -308,6 +321,7 @@ function M.links(title)
           node_type = node.type,
           node_id = node.note_id,
           direction = direction,
+          file = file_path,
         })
       end
     end
