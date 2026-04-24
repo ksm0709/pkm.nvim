@@ -9,3 +9,4 @@
 - Removed deprecated `.bak` workflow roots from `pkm workflows` picker
 - Fixed `pkm links` fast event crash by caching the buffer name synchronously
 - Fixed `snacks.picker` empty item crash by ensuring fallback text values
+- Disabled notifications in `snacks.picker` async finders to prevent silent crashes and improve UX

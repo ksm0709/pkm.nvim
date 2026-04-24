@@ -169,7 +169,7 @@ function M.search()
           if async then
             async:resume()
           end
-        end)
+        end, nil, { notify_msg = false })
       end
     end,
     format = function(item)
@@ -223,7 +223,7 @@ function M.tags()
           if async then
             async:resume()
           end
-        end)
+        end, nil, { notify_msg = false })
       end
     end,
     actions = {
@@ -280,7 +280,7 @@ function M.links(title)
           if async then
             async:resume()
           end
-        end)
+        end, nil, { notify_msg = false })
       end
     end,
     actions = {
