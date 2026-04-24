@@ -239,6 +239,7 @@ end
 
 function M.links(title)
   local snacks = require("snacks")
+  local buf_name = vim.api.nvim_buf_get_name(0)
   snacks.picker({
     title = "PKM Links",
     supports_live = true,
@@ -251,7 +252,6 @@ function M.links(title)
         end
 
         if not pattern or pattern == "" then
-          local buf_name = vim.api.nvim_buf_get_name(0)
           if buf_name ~= "" then
             pattern = vim.fn.fnamemodify(buf_name, ":t:r")
           else
