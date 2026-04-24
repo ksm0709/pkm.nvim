@@ -1,0 +1,2 @@
+- Added `require('pkm').statusline()` function to display active vault
+- Updated `<leader>pD` to place sub-notes directly in `daily/` directory
