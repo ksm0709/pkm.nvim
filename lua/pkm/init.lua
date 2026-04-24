@@ -32,6 +32,7 @@ function M.setup(opts)
 end
 
 local _statusline_fetching = false
+local _statusline_last_try = 0
 
 function M.statusline()
   local vault = require("pkm.vault").current
@@ -39,12 +40,27 @@ function M.statusline()
     return "󰠮 " .. vault.name
   end
 
-  if not _statusline_fetching then
+  local now = vim.loop.now()
+  if not _statusline_fetching and (now - _statusline_last_try > 5000) then
     _statusline_fetching = true
-    vim.schedule(function()
-      require("pkm.vault").get()
-      vim.cmd("redrawstatus")
-    end)
+    _statusline_last_try = now
+
+    require("pkm.cli").exec({ "vault", "where" }, {
+      vault = false,
+      on_success = function(res)
+        local path = require("pkm.util").trim(res.stdout)
+        if path ~= "" then
+          local name = vim.fn.fnamemodify(path, ":t")
+          require("pkm.vault").set({ name = name, path = path })
+          vim.cmd("redrawstatus")
+        end
+        -- Allow refetching if it was empty, but cooldown protects it
+        _statusline_fetching = false
+      end,
+      on_error = function()
+        _statusline_fetching = false
+      end,
+    })
   end
 
   return ""

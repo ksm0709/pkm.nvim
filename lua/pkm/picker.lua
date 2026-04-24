@@ -147,20 +147,22 @@ function M.search()
   snacks.picker({
     title = "PKM Search",
     supports_live = true,
-    finder = function(ctx, cb)
+    finder = function(opts, ctx)
       local pattern = ctx.filter.pattern
-      if pattern == "" then
-        cb({})
-        return
-      end
-      cli.search(pattern, function(res)
-        local parsed = util.json_decode(res.stdout)
-        if not parsed or not parsed.results then
+      return function(cb)
+        if pattern == "" then
           cb({})
           return
         end
-        cb(build_result_items(parsed.results))
-      end)
+        cli.search(pattern, function(res)
+          local parsed = util.json_decode(res.stdout)
+          if not parsed or not parsed.results then
+            cb({})
+            return
+          end
+          cb(build_result_items(parsed.results))
+        end)
+      end
     end,
     format = function(item)
       local text = { { item.text or "", "Normal" } }
@@ -185,30 +187,32 @@ function M.tags()
   snacks.picker({
     title = "PKM Tags",
     supports_live = true,
-    finder = function(ctx, cb)
+    finder = function(opts, ctx)
       local pattern = ctx.filter.pattern
-      if pattern == "" then
-        cb({})
-        return
-      end
-      cli.tags_search(pattern, function(res)
-        local parsed = util.json_decode(res.stdout)
-        if not parsed or not parsed.results then
+      return function(cb)
+        if pattern == "" then
           cb({})
           return
         end
+        cli.tags_search(pattern, function(res)
+          local parsed = util.json_decode(res.stdout)
+          if not parsed or not parsed.results then
+            cb({})
+            return
+          end
 
-        local items = {}
-        for _, result in ipairs(parsed.results) do
-          local tags_str = table.concat(result.tags or {}, ", ")
-          table.insert(items, {
-            text = result.title,
-            desc = "[" .. tags_str .. "]",
-            file = note_path_from_result(result),
-          })
-        end
-        cb(items)
-      end)
+          local items = {}
+          for _, result in ipairs(parsed.results) do
+            local tags_str = table.concat(result.tags or {}, ", ")
+            table.insert(items, {
+              text = result.title,
+              desc = "[" .. tags_str .. "]",
+              file = note_path_from_result(result),
+            })
+          end
+          cb(items)
+        end)
+      end
     end,
     actions = {
       confirm = function(picker, item)
@@ -226,41 +230,43 @@ function M.links(title)
   snacks.picker({
     title = "PKM Links",
     supports_live = true,
-    finder = function(ctx, cb)
+    finder = function(opts, ctx)
       local pattern = ctx.filter.pattern
-      if pattern == "" then
-        pattern = title
+      return function(cb)
+        if pattern == "" then
+          pattern = title
+        end
+
+        if not pattern or pattern == "" then
+          local buf_name = vim.api.nvim_buf_get_name(0)
+          if buf_name ~= "" then
+            pattern = vim.fn.fnamemodify(buf_name, ":t:r")
+          else
+            cb({})
+            return
+          end
+        end
+
+        cli.note_links(pattern, function(res)
+          local parsed = util.json_decode(res.stdout)
+          if not parsed or not parsed.backlinks then
+            cb({})
+            return
+          end
+
+          local items = {}
+          for _, result in ipairs(parsed.backlinks) do
+            local desc = result.description or ""
+            desc = util.normalize_output(desc):gsub("\n", " ")
+            table.insert(items, {
+              text = result.title,
+              desc = desc,
+              file = note_path_from_result(result),
+            })
+          end
+          cb(items)
+        end)
       end
-
-      if not pattern or pattern == "" then
-        local buf_name = vim.api.nvim_buf_get_name(0)
-        if buf_name ~= "" then
-          pattern = vim.fn.fnamemodify(buf_name, ":t:r")
-        else
-          cb({})
-          return
-        end
-      end
-
-      cli.note_links(pattern, function(res)
-        local parsed = util.json_decode(res.stdout)
-        if not parsed or not parsed.backlinks then
-          cb({})
-          return
-        end
-
-        local items = {}
-        for _, result in ipairs(parsed.backlinks) do
-          local desc = result.description or ""
-          desc = util.normalize_output(desc):gsub("\n", " ")
-          table.insert(items, {
-            text = result.title,
-            desc = desc,
-            file = note_path_from_result(result),
-          })
-        end
-        cb(items)
-      end)
     end,
     actions = {
       confirm = function(picker, item)

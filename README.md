@@ -3,3 +3,4 @@
 - Added robust test cases for `pkm ask` chunk streaming and linebreaks
 - Disabled line numbers and sign columns in the `pkm chat` UI
 - Ensured markdown rendering works immediately upon opening the chat buffer
+- Made `require('pkm').statusline()` non-blocking to prevent UI freezes
