@@ -203,13 +203,13 @@ describe("pkm.picker", function()
     assert.are.equal("PKM Search", last_picker().title)
 
     local cb_items = nil
-    last_picker().finder(nil, { filter = { pattern = "alpha" } })(function(items)
+    last_picker().finder({ filter = { pattern = "alpha" } })(function(items)
       cb_items = items
     end)
-
+    
     assert.are.equal("/tmp/note-a.md", cb_items[1].file)
     assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a/notes/note-b.md", cb_items[2].file)
-
+    
     last_picker().actions.confirm({
       close = function()
         state.picker_closed = true
@@ -219,10 +219,10 @@ describe("pkm.picker", function()
 
     picker.tags()
     assert.are.equal("PKM Tags", last_picker().title)
-    last_picker().finder(nil, { filter = { pattern = "topic" } })(function(items)
+    last_picker().finder({ filter = { pattern = "topic" } })(function(items)
       cb_items = items
     end)
-
+    
     last_picker().actions.confirm({
       close = function()
         state.picker_closed = true
@@ -232,10 +232,10 @@ describe("pkm.picker", function()
 
     picker.links("Some Title")
     assert.are.equal("PKM Links", last_picker().title)
-    last_picker().finder(nil, { filter = { pattern = "" } })(function(items)
+    last_picker().finder({ filter = { pattern = "" } })(function(items)
       cb_items = items
     end)
-
+    
     last_picker().actions.confirm({
       close = function()
         state.picker_closed = true
