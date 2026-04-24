@@ -143,9 +143,12 @@ end
 
 function M.search()
   local snacks = require("snacks")
+  local current = current_vault()
+  local vault_name = current and current.name or nil
   snacks.picker({
     title = "PKM Search",
     supports_live = true,
+    live = true,
     finder = function(opts, ctx)
       local filter = (ctx and ctx.filter) or (opts and opts.filter) or {}
       local pattern = filter.search
@@ -169,7 +172,7 @@ function M.search()
           if async then
             async:resume()
           end
-        end, nil, { notify_msg = false })
+        end, nil, { notify_msg = false, vault = vault_name })
 
         if async then
           async:suspend()
@@ -205,9 +208,12 @@ end
 
 function M.tags()
   local snacks = require("snacks")
+  local current = current_vault()
+  local vault_name = current and current.name or nil
   snacks.picker({
     title = "PKM Tags",
     supports_live = true,
+    live = true,
     finder = function(opts, ctx)
       local filter = (ctx and ctx.filter) or (opts and opts.filter) or {}
       local pattern = filter.search
@@ -231,7 +237,7 @@ function M.tags()
           if async then
             async:resume()
           end
-        end, nil, { notify_msg = false })
+        end, nil, { notify_msg = false, vault = vault_name })
 
         if async then
           async:suspend()
@@ -266,9 +272,12 @@ end
 function M.links(title)
   local snacks = require("snacks")
   local buf_name = vim.api.nvim_buf_get_name(0)
+  local current = current_vault()
+  local vault_name = current and current.name or nil
   snacks.picker({
     title = "PKM Links",
     supports_live = true,
+    live = true,
     finder = function(opts, ctx)
       local filter = (ctx and ctx.filter) or (opts and opts.filter) or {}
       local pattern = filter.search
@@ -300,7 +309,7 @@ function M.links(title)
           if async then
             async:resume()
           end
-        end, nil, { notify_msg = false })
+        end, nil, { notify_msg = false, vault = vault_name })
 
         if async then
           async:suspend()
