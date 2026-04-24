@@ -22,3 +22,10 @@ luacov.stats.out
 *.swp
 *.swo
 .omx/
+
+# Local context and agents
+.context/
+.pkm/
+AGENTS.md
+CLAUDE.md
+node_modules/
