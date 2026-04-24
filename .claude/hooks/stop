@@ -2,6 +2,8 @@
 
 exec 1>&2
 
+export PATH="$PWD/.rocks/bin:$HOME/.cargo/bin:$PATH"
+
 if git diff --quiet HEAD; then
     exit 0
 fi
@@ -47,7 +49,7 @@ if ! command -v luacov &> /dev/null; then
 fi
 
 echo "Running tests..."
-if ! busted --coverage 2>/dev/null; then
+if ! busted --helper spec/spec_helper.lua --coverage spec 2>/dev/null; then
     echo "Error: Tests failed."
     exit 2
 fi

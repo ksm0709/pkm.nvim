@@ -27,35 +27,17 @@ local function set_buf_common(buf)
   vim.bo[buf].modifiable = true
 end
 
-local function append_lines(buf, lines)
-  if not valid_buf(buf) then
-    return
-  end
-
-  if #lines == 0 then
-    return
-  end
-
-  if lines[#lines] == "" then
-    table.remove(lines, #lines)
-  end
-
-  if #lines == 0 then
-    return
-  end
-
-  vim.bo[buf].modifiable = true
-  local current = vim.api.nvim_buf_line_count(buf)
-  if current == 1 and vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] == "" then
-    vim.api.nvim_buf_set_lines(buf, 0, 1, false, lines)
-  else
-    vim.api.nvim_buf_set_lines(buf, current, current, false, lines)
-  end
-  vim.bo[buf].modifiable = false
-end
-
 local function append_text(buf, text)
-  append_lines(buf, util.split_lines(text))
+  if not valid_buf(buf) or not text or text == "" then
+    return
+  end
+  vim.bo[buf].modifiable = true
+  local lines = vim.split(text, "\n", { plain = true })
+  local line_count = vim.api.nvim_buf_line_count(buf)
+  local last_line = vim.api.nvim_buf_get_lines(buf, line_count - 1, line_count, false)[1]
+  local last_col = #last_line
+  vim.api.nvim_buf_set_text(buf, line_count - 1, last_col, line_count - 1, last_col, lines)
+  vim.bo[buf].modifiable = false
 end
 
 local function clear_input()
@@ -126,8 +108,8 @@ function M.open()
   vim.api.nvim_buf_set_lines(state.input_buf, 0, -1, false, { "" })
   vim.api.nvim_win_set_buf(state.input_win, state.input_buf)
 
-  vim.bo[state.input_buf].filetype = "pkmchat"
-  vim.bo[state.stdout_buf].filetype = "pkmchat"
+  vim.bo[state.input_buf].filetype = "markdown"
+  vim.bo[state.stdout_buf].filetype = "markdown"
   vim.wo[state.stdout_win].wrap = true
   vim.wo[state.input_win].wrap = true
   vim.wo[state.stdout_win].winfixwidth = true

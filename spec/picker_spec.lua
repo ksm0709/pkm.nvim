@@ -57,7 +57,7 @@ describe("pkm.picker", function()
         state.open_daily_target = target
       end,
       sub_daily_path = function(_, title)
-        return "/tmp/pkm-test-vaults/temp-vault-a/notes/2026-04-24-" .. title:lower():gsub("%s+", "-") .. ".md"
+        return "/tmp/pkm-test-vaults/temp-vault-a/daily/2026-04-24-" .. title:lower():gsub("%s+", "-") .. ".md"
       end,
     }
 
@@ -137,9 +137,15 @@ describe("pkm.picker", function()
 
     state.pickers = {}
     package.loaded["snacks"] = {
-      picker = function(config)
-        table.insert(state.pickers, config)
-      end,
+      picker = setmetatable({
+        grep = function(config)
+          table.insert(state.pickers, config)
+        end,
+      }, {
+        __call = function(_, config)
+          table.insert(state.pickers, config)
+        end,
+      }),
     }
 
     state.system_handler = function(cmd)
@@ -215,9 +221,8 @@ describe("pkm.picker", function()
     assert.is_true(#last_picker().items >= 2)
 
     picker.grep("needle")
-    assert.are.equal("PKM Grep: needle", last_picker().title)
-    confirm_last(1)
-    assert.is_true(state.windows[state.current_win].cursor[1] == 12)
+    assert.are.equal("needle", last_picker().search)
+    assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a", last_picker().dirs[1])
   end)
 
   it("covers prompt paths, daily actions, vault switching, workflows, and chat toggle", function()

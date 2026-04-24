@@ -168,8 +168,12 @@ function M.note_path(vault, title)
 end
 
 function M.sub_daily_path(vault, title)
+  local root = vault and vault.path or (M.get() and M.get().path)
+  if not root or root == "" then
+    return nil
+  end
   local current_date = os.date("%Y-%m-%d")
-  return M.note_path(vault, current_date .. "-" .. util.slugify(title))
+  return util.join_path(root, "daily", current_date .. "-" .. util.slugify(title) .. ".md")
 end
 
 function M.open_file(path)

@@ -535,6 +535,19 @@ function M.new(opts)
     return state.buffers[buf] and state.buffers[buf].name or ""
   end
 
+  function vim.api.nvim_buf_set_text(buf, start_row, start_col, end_row, end_col, replacement)
+    buf = normalize_buf(buf)
+    local lines = ensure_buffer(buf).lines
+    if start_row == end_row and start_row == #lines - 1 then
+      local current = lines[start_row + 1] or ""
+      local new_line = current:sub(1, start_col) .. replacement[1]
+      lines[start_row + 1] = new_line
+      for i = 2, #replacement do
+        table.insert(lines, replacement[i])
+      end
+    end
+  end
+
   function vim.api.nvim_buf_get_lines(buf, start_idx, end_idx, _)
     buf = normalize_buf(buf)
     local lines = ensure_buffer(buf).lines

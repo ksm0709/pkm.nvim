@@ -114,9 +114,15 @@ local function build_result_items(results)
   local items = {}
   for _, result in ipairs(results or {}) do
     local tags = result.tags or {}
+    if tags == vim.NIL then
+      tags = {}
+    end
     local tag_text = #tags > 0 and ("[" .. table.concat(tags, ", ") .. "]") or ""
-    local desc = result.description or ""
-    desc = util.normalize_output(desc):gsub("\n", " ")
+    local desc = result.description
+    if desc == vim.NIL then
+      desc = ""
+    end
+    desc = util.normalize_output(desc or ""):gsub("\n", " ")
     local meta = {}
     if result.score then
       table.insert(meta, string.format("score=%.3f", result.score))
@@ -300,46 +306,19 @@ function M.files()
 end
 
 function M.grep(query)
-  if not query or query == "" then
-    prompt("PKM Grep", function(input)
-      M.grep(input)
-    end)
-    return
-  end
-
   local vault_path = ensure_vault_path()
   if not vault_path then
     util.notify("No active vault found", vim.log.levels.ERROR)
     return
   end
-
-  local obj = vim.system({ "rg", "--vimgrep", query, vault_path }, { text = true }):wait()
-  if obj.code ~= 0 and util.trim(obj.stdout) == "" then
-    util.notify("No grep results found", vim.log.levels.INFO)
+  local ok, snacks = pcall(require, "snacks")
+  if not ok then
+    util.notify("Snacks.nvim is required for pickers", vim.log.levels.ERROR)
     return
   end
-
-  local items = {}
-  for _, line in ipairs(vim.split(util.trim(obj.stdout), "\n", { plain = true, trimempty = true })) do
-    local file, lnum, col, text = line:match("^([^:]+):(%d+):(%d+):(.*)$")
-    if file then
-      table.insert(items, {
-        text = vim.fn.fnamemodify(file, ":t"),
-        desc = string.format("%s:%s:%s %s", vim.fn.fnamemodify(file, ":."), lnum, col, text),
-        file = file,
-        line = tonumber(lnum),
-        col = tonumber(col),
-      })
-    end
-  end
-
-  snacks_picker("PKM Grep: " .. query, items, {
-    confirm = function(picker, item)
-      picker:close()
-      if item and item.file then
-        open_path(item.file, item.line, item.col)
-      end
-    end,
+  snacks.picker.grep({
+    dirs = { vault_path },
+    search = query or "",
   })
 end
 

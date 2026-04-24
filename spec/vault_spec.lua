@@ -88,7 +88,7 @@ describe("pkm.vault", function()
     assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a/daily/2026-04-24.md", vault.daily_path(current, "2026-04-24"))
     assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a/notes/foo-bar.md", vault.note_path(current, "Foo Bar"))
     assert.are.equal(
-      "/tmp/pkm-test-vaults/temp-vault-a/notes/2026-04-24-foo-bar.md",
+      "/tmp/pkm-test-vaults/temp-vault-a/daily/2026-04-24-foo-bar.md",
       vault.sub_daily_path(current, "Foo Bar")
     )
 
@@ -145,7 +145,7 @@ describe("pkm.vault", function()
     vault.open_daily({ path = "" })
     assert.are.equal("Unable to resolve daily note path", state.notifications[#state.notifications].message)
 
-    local existing = "/tmp/pkm-test-vaults/temp-vault-a/notes/2026-04-24-foo-bar.md"
+    local existing = "/tmp/pkm-test-vaults/temp-vault-a/daily/2026-04-24-foo-bar.md"
     state.files[existing] = { "# note" }
     vault.open_sub_daily({ name = "TEMP_VAULT_A", path = "/tmp/pkm-test-vaults/temp-vault-a" }, "Foo Bar")
     assert.are.equal("edit " .. existing, state.commands[#state.commands])

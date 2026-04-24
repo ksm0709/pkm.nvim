@@ -31,4 +31,12 @@ function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", default_config, opts or {})
 end
 
+function M.statusline()
+  local vault = require("pkm.vault").get()
+  if vault and vault.name then
+    return vault.name
+  end
+  return ""
+end
+
 return M
