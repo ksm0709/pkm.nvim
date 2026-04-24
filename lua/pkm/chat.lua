@@ -128,9 +128,16 @@ function M.open()
 
   state.stdout_buf = vim.api.nvim_create_buf(false, true)
   set_buf_common(state.stdout_buf)
+  vim.api.nvim_win_set_buf(state.stdout_win, state.stdout_buf)
+  vim.bo[state.stdout_buf].filetype = "markdown"
   vim.bo[state.stdout_buf].modifiable = false
   vim.bo[state.stdout_buf].readonly = true
-  vim.api.nvim_win_set_buf(state.stdout_win, state.stdout_buf)
+
+  vim.wo[state.stdout_win].wrap = true
+  vim.wo[state.stdout_win].winfixwidth = true
+  vim.wo[state.stdout_win].number = false
+  vim.wo[state.stdout_win].relativenumber = false
+  vim.wo[state.stdout_win].signcolumn = "no"
 
   vim.cmd("belowright split")
   state.input_win = vim.api.nvim_get_current_win()
@@ -138,16 +145,16 @@ function M.open()
 
   state.input_buf = vim.api.nvim_create_buf(false, true)
   set_buf_common(state.input_buf)
-  vim.api.nvim_buf_set_lines(state.input_buf, 0, -1, false, { "" })
   vim.api.nvim_win_set_buf(state.input_win, state.input_buf)
-
   vim.bo[state.input_buf].filetype = "markdown"
-  vim.bo[state.stdout_buf].filetype = "markdown"
-  vim.wo[state.stdout_win].wrap = true
+  vim.api.nvim_buf_set_lines(state.input_buf, 0, -1, false, { "" })
+
   vim.wo[state.input_win].wrap = true
-  vim.wo[state.stdout_win].winfixwidth = true
   vim.wo[state.input_win].winfixwidth = true
   vim.wo[state.input_win].winfixheight = true
+  vim.wo[state.input_win].number = false
+  vim.wo[state.input_win].relativenumber = false
+  vim.wo[state.input_win].signcolumn = "no"
 
   vim.keymap.set("n", "q", close, { buffer = state.stdout_buf, silent = true, desc = "Close PKM chat" })
   vim.keymap.set("n", "q", close, { buffer = state.input_buf, silent = true, desc = "Close PKM chat" })

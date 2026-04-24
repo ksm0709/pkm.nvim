@@ -1,3 +1,5 @@
 - Added `require('pkm').statusline()` function to display active vault
 - Updated `<leader>pD` to place sub-notes directly in `daily/` directory
 - Added robust test cases for `pkm ask` chunk streaming and linebreaks
+- Disabled line numbers and sign columns in the `pkm chat` UI
+- Ensured markdown rendering works immediately upon opening the chat buffer
