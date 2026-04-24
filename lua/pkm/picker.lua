@@ -274,72 +274,92 @@ function M.links(title)
   local buf_name = vim.api.nvim_buf_get_name(0)
   local current = current_vault()
   local vault_name = current and current.name or nil
-  snacks.picker({
-    title = "PKM Links",
-    supports_live = true,
-    live = true,
-    finder = function(opts, ctx)
-      local filter = (ctx and ctx.filter) or (opts and opts.filter) or {}
-      local pattern = filter.search
-        or filter.pattern
-        or (type(opts) == "table" and opts.search)
-        or (type(opts) == "table" and opts.pattern)
-        or ""
-      if type(pattern) ~= "string" then
-        pattern = ""
-      end
-      return function(cb)
-        if pattern == "" then
-          pattern = title
+
+  local target_note = title
+  if not target_note or target_note == "" then
+    if buf_name ~= "" then
+      target_note = vim.fn.fnamemodify(buf_name, ":t:r")
+    else
+      util.notify("No active note to get links for", vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  cli.graph_neighbors(target_note, function(res)
+    local parsed = util.json_decode(res.stdout)
+    if not parsed then
+      util.notify("Failed to parse graph neighbors", vim.log.levels.ERROR)
+      return
+    end
+
+    local items = {}
+    local function add_nodes(nodes, direction)
+      for _, node in ipairs(nodes or {}) do
+        -- extract info
+        local name = node.title or node.note_id
+        if node.type == "tag" then
+          name = name:gsub("^tag:", "")
         end
 
-        if not pattern or pattern == "" then
-          if buf_name ~= "" then
-            pattern = vim.fn.fnamemodify(buf_name, ":t:r")
-          else
+        table.insert(items, {
+          text = name,
+          desc = string.format("[%s] %s", direction, node.type),
+          node_type = node.type,
+          node_id = node.note_id,
+          direction = direction,
+        })
+      end
+    end
+
+    add_nodes(parsed.inbound, "inbound")
+    add_nodes(parsed.outbound, "outbound")
+    add_nodes(parsed.semantic, "semantic")
+
+    snacks.picker({
+      title = "PKM Links: " .. target_note,
+      items = items,
+      format = function(item)
+        return { { item.text, "Normal" }, { " " .. item.desc, "Comment" } }
+      end,
+      actions = {
+        confirm = function(picker, item)
+          picker:close()
+          if not item then
             return
           end
-        end
 
-        local async = require("snacks.picker.util.async").running()
-        local results = nil
-
-        cli.note_links(pattern, function(res)
-          results = res
-          if async then
-            async:resume()
-          end
-        end, nil, { notify_msg = false, vault = vault_name })
-
-        if async then
-          async:suspend()
-        end
-
-        if results then
-          local parsed = util.json_decode(results.stdout)
-          if parsed and parsed.backlinks then
-            for _, result in ipairs(parsed.backlinks) do
-              local desc = result.description or ""
-              desc = util.normalize_output(desc):gsub("\n", " ")
-              cb({
-                text = result.title or result.note_id or "(untitled)",
-                desc = desc,
-                file = note_path_from_result(result),
-              })
+          local v_path = ensure_vault_path()
+          if item.node_type == "tag" then
+            local tag_name = item.text
+            local path = util.join_path(v_path, "tags", tag_name .. ".md")
+            -- Silently create the tag note if it doesn't exist
+            if not util.file_exists(path) then
+              vim.schedule(function()
+                vim
+                  .system(
+                    { "pkm", "tags", "edit", tag_name },
+                    { text = true, env = vim.tbl_extend("force", vim.fn.environ(), { EDITOR = "true" }) }
+                  )
+                  :wait()
+                open_path(path)
+              end)
+            else
+              open_path(path)
+            end
+          elseif item.node_type == "note_or_unresolved" or item.node_type == "note" then
+            local path = util.join_path(v_path, "notes", util.slugify(item.text) .. ".md")
+            -- check daily too
+            local daily_path = util.join_path(v_path, "daily", item.text .. ".md")
+            if util.file_exists(daily_path) then
+              open_path(daily_path)
+            else
+              open_path(path)
             end
           end
-        end
-      end
-    end,
-    actions = {
-      confirm = function(picker, item)
-        picker:close()
-        if item and item.file then
-          open_path(item.file)
-        end
-      end,
-    },
-  })
+        end,
+      },
+    })
+  end, nil, { notify_msg = false, vault = vault_name })
 end
 
 function M.vaults()

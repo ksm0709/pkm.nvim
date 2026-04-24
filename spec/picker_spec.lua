@@ -107,17 +107,13 @@ describe("pkm.picker", function()
           }),
         })
       end,
-      note_links = function(title, on_success)
-        state.links_query = title
+      graph_neighbors = function(note_id, on_success)
+        state.links_query = note_id
         on_success({
           stdout = json.encode({
-            backlinks = {
-              {
-                title = "Backlink",
-                description = "linked",
-                graph_context = nil,
-              },
-            },
+            inbound = { { title = "Inbound", note_id = "inbound", type = "note" } },
+            outbound = { { title = "Outbound", note_id = "outbound", type = "note" } },
+            semantic = { { title = "Semantic", note_id = "semantic", type = "tag" } },
           }),
         })
       end,
@@ -230,18 +226,19 @@ describe("pkm.picker", function()
     assert.are.equal("edit /tmp/tag-note.md", state.commands[#state.commands])
 
     picker.links("Some Title")
-    assert.are.equal("PKM Links", last_picker().title)
-    cb_items = {}
-    last_picker().finder({ filter = { search = "" } })(function(item)
-      table.insert(cb_items, item)
-    end)
+    assert.are.equal("PKM Links: Some Title", last_picker().title)
+    assert.are.equal(3, #last_picker().items)
+    assert.are.equal("Inbound", last_picker().items[1].text)
+    assert.are.equal("Outbound", last_picker().items[2].text)
+    assert.are.equal("Semantic", last_picker().items[3].text)
 
     last_picker().actions.confirm({
       close = function()
         state.picker_closed = true
       end,
-    }, cb_items[1])
-    assert.are.equal("edit /tmp/pkm-test-vaults/temp-vault-a/notes/backlink.md", state.commands[#state.commands])
+    }, last_picker().items[1])
+    -- The path for note is /tmp/pkm-test-vaults/temp-vault-a/notes/inbound.md
+    assert.are.equal("edit /tmp/pkm-test-vaults/temp-vault-a/notes/inbound.md", state.commands[#state.commands])
 
     picker.files()
     assert.is_true(#last_picker().items >= 2)

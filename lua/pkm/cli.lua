@@ -375,6 +375,17 @@ function M.note_links(title, on_success, on_error, opts)
   )
 end
 
+function M.graph_neighbors(note_id, on_success, on_error, opts)
+  exec_async(
+    { "graph", "neighbors", note_id, "--semantic", "--format", "json" },
+    vim.tbl_extend("force", {
+      notify_msg = false,
+      on_success = on_success,
+      on_error = on_error,
+    }, opts or {})
+  )
+end
+
 function M.ask_stream(query, handlers, opts)
   handlers = handlers or {}
   return exec_stream(
