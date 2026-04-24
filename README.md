@@ -11,3 +11,4 @@
 - Fixed `snacks.picker` empty item crash by ensuring fallback text values
 - Disabled notifications in `snacks.picker` async finders to prevent silent crashes and improve UX
 - Fixed `snacks.picker` live search not updating by correctly reading `ctx.filter.search` instead of `pattern`
+- Improved robustness of async finders in `pkm search`, `tags`, and `links` by extracting pattern gracefully from any signature variant

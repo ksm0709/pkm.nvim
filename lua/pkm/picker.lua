@@ -147,8 +147,15 @@ function M.search()
     title = "PKM Search",
     supports_live = true,
     finder = function(opts, ctx)
-      ctx = ctx or opts
-      local pattern = ctx.filter.search
+      local filter = (ctx and ctx.filter) or (opts and opts.filter) or {}
+      local pattern = filter.search
+        or filter.pattern
+        or (type(opts) == "table" and opts.search)
+        or (type(opts) == "table" and opts.pattern)
+        or ""
+      if type(pattern) ~= "string" then
+        pattern = ""
+      end
       return function(cb)
         if pattern == "" then
           return
@@ -196,8 +203,15 @@ function M.tags()
     title = "PKM Tags",
     supports_live = true,
     finder = function(opts, ctx)
-      ctx = ctx or opts
-      local pattern = ctx.filter.search
+      local filter = (ctx and ctx.filter) or (opts and opts.filter) or {}
+      local pattern = filter.search
+        or filter.pattern
+        or (type(opts) == "table" and opts.search)
+        or (type(opts) == "table" and opts.pattern)
+        or ""
+      if type(pattern) ~= "string" then
+        pattern = ""
+      end
       return function(cb)
         if pattern == "" then
           return
@@ -244,8 +258,15 @@ function M.links(title)
     title = "PKM Links",
     supports_live = true,
     finder = function(opts, ctx)
-      ctx = ctx or opts
-      local pattern = ctx.filter.search
+      local filter = (ctx and ctx.filter) or (opts and opts.filter) or {}
+      local pattern = filter.search
+        or filter.pattern
+        or (type(opts) == "table" and opts.search)
+        or (type(opts) == "table" and opts.pattern)
+        or ""
+      if type(pattern) ~= "string" then
+        pattern = ""
+      end
       return function(cb)
         if pattern == "" then
           pattern = title
