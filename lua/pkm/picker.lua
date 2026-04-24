@@ -6,7 +6,6 @@ local util = require("pkm.util")
 local vault = require("pkm.vault")
 
 local workflow_roots = {
-  vim.fn.expand("~/.claude/commands/pkm.bak"),
   vim.fn.expand("~/.claude/skills/pkm/workflows"),
 }
 

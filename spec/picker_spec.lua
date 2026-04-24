@@ -158,16 +158,6 @@ describe("pkm.picker", function()
 
     state.system_handler = function(cmd)
       local line = table.concat(cmd, " ")
-      if line:find("rg --files", 1, true) and line:find("pkm.bak", 1, true) then
-        return {
-          code = 0,
-          stdout = table.concat({
-            "/home/taeho/.claude/skills/pkm/workflows/zettelkasten-maintenance.md",
-            "/home/taeho/.claude/commands/pkm.bak/add-workflow.md",
-          }, "\n"),
-          stderr = "",
-        }
-      end
       if line:find("rg --files", 1, true) then
         return {
           code = 0,
