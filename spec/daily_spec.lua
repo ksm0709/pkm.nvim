@@ -30,6 +30,9 @@ describe("pkm.daily", function()
       daily_path = function()
         return daily_path
       end,
+      sub_daily_path = function(v, title)
+        return "/tmp/pkm-test/vault/daily/" .. (title or "sub") .. ".md"
+      end,
     }
     package.loaded["pkm.cli"] = {
       daily_add = function(content, on_success)
@@ -137,31 +140,31 @@ describe("pkm.daily", function()
     assert.is_nil(daily_sub_args)
   end)
 
-  it("/add-subnote <title> calls cli.daily_sub", function()
+  it("/subnote <title> calls cli.daily_sub", function()
     daily.toggle()
 
-    state.buffers[3].lines = { "/add-subnote My Research Note" }
+    state.buffers[3].lines = { "/subnote My Research Note" }
     find_keymap("<CR>").rhs()
 
     assert.are.equal("My Research Note", daily_sub_args)
     assert.is_nil(daily_add_args)
   end)
 
-  it("/add-subnote none calls vim.ui.input then cli.daily_sub", function()
+  it("/subnote none calls vim.ui.input then cli.daily_sub", function()
     table.insert(state.inputs, "Prompted Title")
     daily.toggle()
 
-    state.buffers[3].lines = { "/add-subnote none" }
+    state.buffers[3].lines = { "/subnote none" }
     find_keymap("<CR>").rhs()
 
     assert.are.equal("Prompted Title", daily_sub_args)
   end)
 
-  it("/add-subnote with no argument calls vim.ui.input", function()
+  it("/subnote with no argument calls vim.ui.input", function()
     table.insert(state.inputs, "Input Title")
     daily.toggle()
 
-    state.buffers[3].lines = { "/add-subnote" }
+    state.buffers[3].lines = { "/subnote" }
     find_keymap("<CR>").rhs()
 
     assert.are.equal("Input Title", daily_sub_args)

@@ -117,6 +117,9 @@ describe("pkm.picker", function()
           }),
         })
       end,
+      grep_backlinks = function(note_id, vault_path, on_success)
+        on_success({ stdout = "", code = 1 })
+      end,
       daily_sub = function(title, on_success)
         state.daily_sub_title = title
         if on_success then

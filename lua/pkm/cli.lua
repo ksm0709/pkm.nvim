@@ -387,6 +387,24 @@ function M.graph_neighbors(note_id, on_success, on_error, opts)
   )
 end
 
+function M.grep_backlinks(note_id, vault_path, on_success, on_error)
+  local pattern = "[[" .. note_id
+  vim.system({ "grep", "-rlF", pattern, vault_path, "--include=*.md" }, { text = true }, function(obj)
+    vim.schedule(function()
+      -- grep exits 1 when no matches found (not an error), 2 on real error
+      if obj.code == 0 or obj.code == 1 then
+        if on_success then
+          on_success(obj)
+        end
+      else
+        if on_error then
+          on_error(obj.stderr, obj)
+        end
+      end
+    end)
+  end)
+end
+
 function M.ask_stream(query, handlers, opts)
   handlers = handlers or {}
   return exec_stream(

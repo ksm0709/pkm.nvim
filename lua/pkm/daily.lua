@@ -160,7 +160,7 @@ function M.open()
             end
           end, on_error)
         end
-        if arg == "" then
+        if arg == "" or arg == "none" then
           vim.ui.input({ prompt = "Sub-note title: " }, function(title)
             if title and vim.trim(title) ~= "" then
               open_subnote(vim.trim(title))

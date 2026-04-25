@@ -310,52 +310,107 @@ function M.links(title)
     end
   end
 
-  cli.graph_neighbors(target_note, function(res)
-    if not res or res.error then
-      util.notify("Failed to get graph neighbors", vim.log.levels.ERROR)
-      return
-    end
-    local parsed = util.json_decode(res.stdout)
-    if not parsed then
-      util.notify("Failed to parse graph neighbors", vim.log.levels.ERROR)
-      return
-    end
+  local graph_res = nil
+  local grep_res = nil
+  local pending = 2
 
+  local function node_file_path(name, node_type)
+    if node_type == "tag" then
+      return util.join_path(v_path, "tags", name .. ".md")
+    end
+    local daily = util.join_path(v_path, "daily", name .. ".md")
+    if util.file_exists(daily) then
+      return daily
+    end
+    return util.join_path(v_path, "notes", util.slugify(name) .. ".md")
+  end
+
+  local function open_item(item)
+    if item.node_type == "tag" then
+      local path = util.join_path(v_path, "tags", item.text .. ".md")
+      if not util.file_exists(path) then
+        vim.schedule(function()
+          vim.system(
+            { "pkm", "tags", "edit", item.text },
+            { text = true, env = vim.tbl_extend("force", vim.fn.environ(), { EDITOR = "true" }) }
+          ):wait()
+          open_path(path)
+        end)
+      else
+        open_path(path)
+      end
+    elseif item.file and item.file ~= "" and util.file_exists(item.file) then
+      open_path(item.file)
+    else
+      local daily = util.join_path(v_path, "daily", item.text .. ".md")
+      if util.file_exists(daily) then
+        open_path(daily)
+      else
+        open_path(util.join_path(v_path, "notes", util.slugify(item.text) .. ".md"))
+      end
+    end
+  end
+
+  local function launch_picker()
     local items = {}
-    local function add_nodes(nodes, direction)
-      for _, node in ipairs(nodes or {}) do
-        -- extract info
-        local name = node.title or node.note_id
-        if node.type == "tag" then
-          name = name:gsub("^tag:", "")
-        end
+    local graph_inbound_ids = {}
 
-        local file_path = ""
-        if node.type == "tag" then
-          file_path = util.join_path(v_path, "tags", name .. ".md")
-        elseif node.type == "note_or_unresolved" or node.type == "note" then
-          local daily_path = util.join_path(v_path, "daily", name .. ".md")
-          if util.file_exists(daily_path) then
-            file_path = daily_path
-          else
-            file_path = util.join_path(v_path, "notes", util.slugify(name) .. ".md")
-          end
-        end
-
+    local parsed = graph_res and util.json_decode(graph_res.stdout)
+    if parsed then
+      for _, node in ipairs(parsed.inbound or {}) do
+        local name = (node.title or node.note_id):gsub("^tag:", "")
+        graph_inbound_ids[node.note_id] = true
         table.insert(items, {
           text = name,
-          desc = string.format("[%s] %s", direction, node.type),
+          desc = "[inbound] " .. node.type,
           node_type = node.type,
           node_id = node.note_id,
-          direction = direction,
-          file = file_path,
+          direction = "inbound",
+          file = node_file_path(name, node.type),
+        })
+      end
+      for _, node in ipairs(parsed.outbound or {}) do
+        local name = (node.title or node.note_id):gsub("^tag:", "")
+        table.insert(items, {
+          text = name,
+          desc = "[outbound] " .. node.type,
+          node_type = node.type,
+          node_id = node.note_id,
+          direction = "outbound",
+          file = node_file_path(name, node.type),
+        })
+      end
+      for _, node in ipairs(parsed.semantic or {}) do
+        local name = (node.title or node.note_id):gsub("^tag:", "")
+        table.insert(items, {
+          text = name,
+          desc = "[semantic] " .. node.type,
+          node_type = node.type,
+          node_id = node.note_id,
+          direction = "semantic",
+          file = node_file_path(name, node.type),
         })
       end
     end
 
-    add_nodes(parsed.inbound, "inbound")
-    add_nodes(parsed.outbound, "outbound")
-    add_nodes(parsed.semantic, "semantic")
+    -- Wikilink-based inbound: fill in what graph hasn't indexed yet
+    if grep_res and grep_res.stdout and grep_res.stdout ~= "" then
+      for _, filepath in ipairs(vim.split(vim.trim(grep_res.stdout), "\n")) do
+        if filepath ~= "" then
+          local stem = vim.fn.fnamemodify(filepath, ":t:r")
+          if stem ~= target_note and not graph_inbound_ids[stem] then
+            table.insert(items, {
+              text = stem,
+              desc = "[inbound] wikilink",
+              node_type = "note",
+              node_id = stem,
+              direction = "inbound",
+              file = filepath,
+            })
+          end
+        end
+      end
+    end
 
     snacks.picker({
       title = "PKM Links: " .. target_note,
@@ -366,43 +421,40 @@ function M.links(title)
       actions = {
         confirm = function(picker, item)
           picker:close()
-          if not item then
-            return
-          end
-
-          if item.node_type == "tag" then
-            local tag_name = item.text
-            local path = util.join_path(v_path, "tags", tag_name .. ".md")
-            -- Silently create the tag note if it doesn't exist
-            if not util.file_exists(path) then
-              vim.schedule(function()
-                vim
-                  .system(
-                    { "pkm", "tags", "edit", tag_name },
-                    { text = true, env = vim.tbl_extend("force", vim.fn.environ(), { EDITOR = "true" }) }
-                  )
-                  :wait()
-                open_path(path)
-              end)
-            else
-              open_path(path)
-            end
-          elseif item.node_type == "note_or_unresolved" or item.node_type == "note" then
-            local path = util.join_path(v_path, "notes", util.slugify(item.text) .. ".md")
-            -- check daily too
-            local daily_path = util.join_path(v_path, "daily", item.text .. ".md")
-            if util.file_exists(daily_path) then
-              open_path(daily_path)
-            else
-              open_path(path)
-            end
+          if item then
+            open_item(item)
           end
         end,
       },
     })
-  end, function(err)
-    util.notify("Failed to get graph neighbors: " .. tostring(err), vim.log.levels.ERROR)
+  end
+
+  local function on_done()
+    pending = pending - 1
+    if pending == 0 then
+      launch_picker()
+    end
+  end
+
+  cli.graph_neighbors(target_note, function(res)
+    graph_res = res
+    on_done()
+  end, function(_)
+    graph_res = nil
+    on_done()
   end, { notify_msg = false, vault = vault_name })
+
+  if v_path and v_path ~= "" then
+    cli.grep_backlinks(target_note, v_path, function(res)
+      grep_res = res
+      on_done()
+    end, function(_)
+      grep_res = nil
+      on_done()
+    end)
+  else
+    on_done()
+  end
 end
 
 function M.vaults()

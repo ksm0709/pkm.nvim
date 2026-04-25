@@ -334,6 +334,10 @@ function M.new(opts)
 
   vim.fn = {}
 
+  function vim.fn.pumvisible()
+    return 0
+  end
+
   function vim.fn.executable(name)
     return state.executables[name] and 1 or 0
   end
