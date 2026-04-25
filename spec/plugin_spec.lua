@@ -50,7 +50,7 @@ describe("plugin/pkm.lua", function()
       index = function()
         state.index = true
       end,
-      workflows = function()
+      daemon_workflows = function()
         state.workflows = true
       end,
       chat_toggle = function()
