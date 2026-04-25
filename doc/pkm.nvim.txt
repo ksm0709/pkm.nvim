@@ -29,8 +29,8 @@ The stop hook under `.codex/hooks/stop.sh` enforces:
 
 The plugin exposes these default mappings:
 
-- `<Leader>pd` open today's daily note
-- `<Leader>pD` create a daily sub-note
+- `<Leader>pd` toggle the daily note panel (vsplit viewer + input)
+- `<Leader>pD` create a daily sub-note (legacy)
 - `<Leader>pv` switch vaults
 - `<Leader>pa` toggle the chat window
 - `<Leader>pw` run a workflow

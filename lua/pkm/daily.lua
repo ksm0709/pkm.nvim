@@ -3,6 +3,10 @@ local M = {}
 local cli = require("pkm.cli")
 local vault = require("pkm.vault")
 
+local SLASH_COMMANDS = {
+  { word = "/add-subnote ", menu = "create a linked sub-note" },
+}
+
 local state = {
   open = false,
   prev_win = nil,
@@ -166,6 +170,28 @@ function M.open()
   end
 
   vim.keymap.set({ "n", "i" }, "<CR>", submit, { buffer = ibuf, silent = true, desc = "Submit PKM daily" })
+
+  vim.api.nvim_create_autocmd("TextChangedI", {
+    buffer = ibuf,
+    callback = function()
+      local line = vim.api.nvim_get_current_line()
+      if not line:match("^/") then
+        return
+      end
+      local col = vim.fn.col(".")
+      local typed = line:sub(1, col - 1)
+      local matches = {}
+      for _, cmd in ipairs(SLASH_COMMANDS) do
+        if cmd.word:sub(1, #typed) == typed then
+          matches[#matches + 1] = cmd
+        end
+      end
+      if #matches > 0 then
+        vim.fn.complete(1, matches)
+      end
+    end,
+    desc = "PKM daily slash command completion",
+  })
 
   state.autocmd_id = vim.api.nvim_create_autocmd("WinClosed", {
     callback = function(ev)

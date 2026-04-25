@@ -63,7 +63,7 @@ describe("pkm.cli", function()
 
     local calls = non_lookup_commands()
     assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "daily", "add", "--", "entry" }, calls[1].cmd)
-    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "daily", "add", "--sub", "--", "sub" }, calls[2].cmd)
+    assert.are.same({ "pkm", "--vault", "TEMP_VAULT_A", "daily", "add", "--sub", "sub" }, calls[2].cmd)
     assert.are.same(
       { "pkm", "--vault", "TEMP_VAULT_A", "note", "add", "--", "Title", "--content", "body" },
       calls[3].cmd
