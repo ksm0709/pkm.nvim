@@ -4,7 +4,7 @@ local cli = require("pkm.cli")
 local vault = require("pkm.vault")
 
 local SLASH_COMMANDS = {
-  { word = "/add-subnote ", menu = "create a linked sub-note" },
+  { word = "/subnote ", menu = "create a linked sub-note" },
 }
 
 local state = {
@@ -118,7 +118,7 @@ function M.open()
   vim.wo[state.input_win].number = false
   vim.wo[state.input_win].relativenumber = false
   vim.wo[state.input_win].signcolumn = "no"
-  vim.wo[state.input_win].statusline = "  PKM Daily  │  /add-subnote <title> "
+  vim.wo[state.input_win].statusline = "  PKM Daily  │  /subnote <title> "
 
   local vbuf = state.viewer_buf
   local ibuf = state.input_buf
@@ -150,15 +150,24 @@ function M.open()
     local cmd, arg = content:match("^/(%S+)%s*(.*)")
     if cmd then
       arg = vim.trim(arg or "")
-      if cmd == "add-subnote" then
-        if arg == "" or arg == "none" then
+      if cmd == "subnote" then
+        local function open_subnote(title)
+          cli.daily_sub(title, function()
+            local path = vault.sub_daily_path(vault.get(), title)
+            close()
+            if path and vim.fn.filereadable(path) == 1 then
+              vim.cmd("edit " .. vim.fn.fnameescape(path))
+            end
+          end, on_error)
+        end
+        if arg == "" then
           vim.ui.input({ prompt = "Sub-note title: " }, function(title)
             if title and vim.trim(title) ~= "" then
-              cli.daily_sub(vim.trim(title), refresh_viewer, on_error)
+              open_subnote(vim.trim(title))
             end
           end)
         else
-          cli.daily_sub(arg, refresh_viewer, on_error)
+          open_subnote(arg)
         end
       else
         vim.notify("Unknown command: /" .. cmd, vim.log.levels.WARN, { title = "PKM" })
@@ -169,7 +178,20 @@ function M.open()
     cli.daily_add(content, refresh_viewer, on_error)
   end
 
-  vim.keymap.set({ "n", "i" }, "<CR>", submit, { buffer = ibuf, silent = true, desc = "Submit PKM daily" })
+  vim.keymap.set({ "n", "i" }, "<CR>", function()
+    if vim.fn.pumvisible() == 1 then
+      vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-y>", true, false, true), "n", false)
+      return
+    end
+    submit()
+  end, { buffer = ibuf, silent = true, desc = "Submit PKM daily or accept completion" })
+
+  vim.keymap.set("i", "<Tab>", function()
+    if vim.fn.pumvisible() == 1 then
+      return "<C-y>"
+    end
+    return "<Tab>"
+  end, { buffer = ibuf, expr = true, silent = true, desc = "Accept completion" })
 
   vim.api.nvim_create_autocmd("TextChangedI", {
     buffer = ibuf,

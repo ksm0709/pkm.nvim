@@ -1,3 +1,4 @@
+- Updated `/subnote` slash command: opens created sub-note buffer and simplifies name from `/add-subnote`; Tab/CR now navigate and accept completion popup
 - Updated `<leader>pw` daemon workflow execution to stream output in the right chat panel via `chat.stream_cmd`
 - Added `chat.stream_cmd(title, args)` to stream arbitrary pkm CLI commands into the chat panel
 - Updated `<leader>pw` and `:Pkm workflows` to list and run PKM daemon workflows via `pkm workflow list/run`
