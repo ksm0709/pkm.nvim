@@ -29,3 +29,13 @@ luacov.stats.out
 AGENTS.md
 CLAUDE.md
 node_modules/
+
+# Agent workspaces
+.claude/worktrees/
+.omc/
+.sisyphus/
+
+# Scratch / debug output
+scratch/
+*.log
+
