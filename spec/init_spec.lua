@@ -1,7 +1,7 @@
 require("spec_helper")
 
-local stub = require("spec.support.vim_stub")
 local json = require("dkjson")
+local stub = require("spec.support.vim_stub")
 
 describe("pkm.init", function()
   local vim

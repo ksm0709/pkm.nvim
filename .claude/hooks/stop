@@ -11,29 +11,34 @@ fi
 
 echo "Running quality gates..."
 
-DIRS=""
-[ -d "lua" ] && DIRS="$DIRS lua/"
-[ -d "plugin" ] && DIRS="$DIRS plugin/"
+LINT_DIRS=""
+[ -d "lua" ] && LINT_DIRS="$LINT_DIRS lua/"
+[ -d "plugin" ] && LINT_DIRS="$LINT_DIRS plugin/"
 
-if [ -n "$DIRS" ]; then
+FMT_DIRS="$LINT_DIRS"
+[ -d "spec" ] && FMT_DIRS="$FMT_DIRS spec/"
+
+if [ -n "$FMT_DIRS" ]; then
     if ! command -v stylua &> /dev/null; then
         echo "Error: stylua is not installed. Please install it (e.g., cargo install stylua)."
         exit 2
     fi
 
     echo "Checking formatting..."
-    if ! stylua --check $DIRS 2>/dev/null; then
-        echo "Error: Formatting check failed. Run 'stylua $DIRS' to fix."
+    if ! stylua --check $FMT_DIRS 2>/dev/null; then
+        echo "Error: Formatting check failed. Run 'stylua $FMT_DIRS' to fix."
         exit 2
     fi
+fi
 
+if [ -n "$LINT_DIRS" ]; then
     if ! command -v luacheck &> /dev/null; then
         echo "Error: luacheck is not installed. Please install it (e.g., luarocks install luacheck)."
         exit 2
     fi
 
     echo "Checking linting..."
-    if ! luacheck $DIRS 2>/dev/null; then
+    if ! luacheck $LINT_DIRS 2>/dev/null; then
         echo "Error: Linting check failed. Please fix the luacheck errors."
         exit 2
     fi

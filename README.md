@@ -1,3 +1,4 @@
+- Fixed CI stylua failure: add .styluaignore for root test_*.lua/verify_*.lua; extend stop hook to check spec/ with stylua; fix spec/init_spec.lua formatting
 - Fixed statusline vault name display: use `pkm vault list` active name instead of path basename; added 5 statusline tests and `vim.loop` stub
 - Updated `/subnote` slash command: opens created sub-note buffer and simplifies name from `/add-subnote`; Tab/CR now navigate and accept completion popup
 - Updated `<leader>pw` daemon workflow execution to stream output in the right chat panel via `chat.stream_cmd`
