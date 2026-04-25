@@ -676,16 +676,7 @@ function M.daemon_workflows()
       if not item then
         return
       end
-      vim.system({ "pkm", "workflow", "run", item.id }, { text = true }, function(res)
-        vim.schedule(function()
-          if res.code == 0 then
-            local msg = vim.trim(res.stdout)
-            util.notify(msg ~= "" and msg or ("Queued: " .. item.id), vim.log.levels.INFO)
-          else
-            util.notify("Failed to run '" .. item.id .. "': " .. (res.stderr or ""), vim.log.levels.ERROR)
-          end
-        end)
-      end)
+      chat.stream_cmd("workflow: " .. item.id, { "workflow", "run", item.id })
     end,
   })
 end
