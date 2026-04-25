@@ -56,12 +56,33 @@ function M.statusline()
       on_success = function(res)
         local parsed = require("pkm.util").json_decode(res.stdout)
         if parsed and parsed.vaults then
+          local cwd = vim.fn.getcwd()
+          local matched = nil
+          local matched_len = 0
+
           for _, v in ipairs(parsed.vaults) do
-            if v.active and v.name and v.name ~= "" then
-              require("pkm.vault").set({ name = v.name, path = v.path })
-              vim.cmd("redrawstatus")
-              break
+            if v.path and v.name and v.name ~= "" then
+              if cwd == v.path or vim.startswith(cwd, v.path .. "/") then
+                if #v.path > matched_len then
+                  matched = v
+                  matched_len = #v.path
+                end
+              end
             end
+          end
+
+          if not matched then
+            for _, v in ipairs(parsed.vaults) do
+              if v.active and v.name and v.name ~= "" then
+                matched = v
+                break
+              end
+            end
+          end
+
+          if matched then
+            require("pkm.vault").set({ name = matched.name, path = matched.path })
+            vim.cmd("redrawstatus")
           end
         end
         _statusline_fetching = false

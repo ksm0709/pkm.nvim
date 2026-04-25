@@ -127,6 +127,99 @@ describe("pkm.init", function()
       -- vault.current should still be nil
       assert.is_nil(require("pkm.vault").current)
     end)
+
+    it("prefers CWD-matching vault over active:true when inside vault path", function()
+      state.cwd = "/tmp/pkm-test-vaults/temp-vault-b"
+      state.system_handler = function(cmd)
+        if table.concat(cmd, " ") == "pkm vault list" then
+          return {
+            code = 0,
+            stdout = json.encode({
+              vaults = {
+                { name = "TEMP_VAULT_A", path = "/tmp/pkm-test-vaults/temp-vault-a", active = true },
+                { name = "TEMP_VAULT_B", path = "/tmp/pkm-test-vaults/temp-vault-b", active = false },
+              },
+            }),
+            stderr = "",
+          }
+        end
+        return { code = 0, stdout = "", stderr = "" }
+      end
+
+      require("pkm.vault").current = nil
+      pkm.statusline()
+      -- Should pick TEMP_VAULT_B (CWD match) over TEMP_VAULT_A (active: true)
+      assert.are.equal("TEMP_VAULT_B", require("pkm.vault").current and require("pkm.vault").current.name)
+    end)
+
+    it("matches vault when CWD is a subdirectory of vault path", function()
+      state.cwd = "/tmp/pkm-test-vaults/temp-vault-a/daily"
+      state.system_handler = function(cmd)
+        if table.concat(cmd, " ") == "pkm vault list" then
+          return {
+            code = 0,
+            stdout = json.encode({
+              vaults = {
+                { name = "TEMP_VAULT_A", path = "/tmp/pkm-test-vaults/temp-vault-a", active = false },
+              },
+            }),
+            stderr = "",
+          }
+        end
+        return { code = 0, stdout = "", stderr = "" }
+      end
+
+      require("pkm.vault").current = nil
+      pkm.statusline()
+      assert.are.equal("TEMP_VAULT_A", require("pkm.vault").current and require("pkm.vault").current.name)
+    end)
+
+    it("falls back to active:true vault when CWD is not inside any vault", function()
+      state.cwd = "/home/user/some-other-project"
+      state.system_handler = function(cmd)
+        if table.concat(cmd, " ") == "pkm vault list" then
+          return {
+            code = 0,
+            stdout = json.encode({
+              vaults = {
+                { name = "TEMP_VAULT_A", path = "/tmp/pkm-test-vaults/temp-vault-a", active = true },
+                { name = "TEMP_VAULT_B", path = "/tmp/pkm-test-vaults/temp-vault-b", active = false },
+              },
+            }),
+            stderr = "",
+          }
+        end
+        return { code = 0, stdout = "", stderr = "" }
+      end
+
+      require("pkm.vault").current = nil
+      pkm.statusline()
+      assert.are.equal("TEMP_VAULT_A", require("pkm.vault").current and require("pkm.vault").current.name)
+    end)
+
+    it("selects more specific (longer path) vault when paths are nested", function()
+      state.cwd = "/tmp/vaults/parent/child/notes"
+      state.system_handler = function(cmd)
+        if table.concat(cmd, " ") == "pkm vault list" then
+          return {
+            code = 0,
+            stdout = json.encode({
+              vaults = {
+                { name = "PARENT_VAULT", path = "/tmp/vaults/parent", active = true },
+                { name = "CHILD_VAULT", path = "/tmp/vaults/parent/child", active = false },
+              },
+            }),
+            stderr = "",
+          }
+        end
+        return { code = 0, stdout = "", stderr = "" }
+      end
+
+      require("pkm.vault").current = nil
+      pkm.statusline()
+      -- Child vault path is longer and more specific
+      assert.are.equal("CHILD_VAULT", require("pkm.vault").current and require("pkm.vault").current.name)
+    end)
   end)
 
   describe("vault_invalidate", function()
