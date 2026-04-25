@@ -63,7 +63,7 @@ describe("pkm.init", function()
     it("returns vault name immediately when vault is cached", function()
       require("pkm.vault").current = { name = "TEMP_VAULT_B", path = "/tmp/pkm-test-vaults/temp-vault-b" }
       local result = pkm.statusline()
-      assert.are.equal("󰠮 TEMP_VAULT_B", result)
+      assert.are.equal("󱓧 TEMP_VAULT_B", result)
     end)
 
     it("does not trigger multiple fetches within cooldown window", function()

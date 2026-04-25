@@ -43,7 +43,7 @@ end
 function M.statusline()
   local vault = require("pkm.vault").current
   if vault and vault.name then
-    return "󰠮 " .. vault.name
+    return "󱓧 " .. vault.name
   end
 
   local now = vim.loop.now()
