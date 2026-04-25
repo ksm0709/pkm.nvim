@@ -82,7 +82,7 @@ local function map(mode, lhs, rhs, desc)
 end
 
 map("n", "<Leader>pd", function()
-  require("pkm.picker").daily_open()
+  require("pkm.daily").toggle()
 end, "PKM Daily Note")
 map("n", "<Leader>pD", function()
   require("pkm.picker").daily_sub()
