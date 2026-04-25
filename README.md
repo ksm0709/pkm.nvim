@@ -1,3 +1,4 @@
+- Updated `<leader>pw` and `:Pkm workflows` to list and run PKM daemon workflows via `pkm workflow list/run`
 - Updated `<leader>pl` to display graph neighbors (inbound, outbound, semantic) using a static picker
 - Added `require('pkm').statusline()` function to display active vault
 - Updated `<leader>pD` to place sub-notes directly in `daily/` directory

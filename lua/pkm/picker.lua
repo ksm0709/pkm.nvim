@@ -636,6 +636,48 @@ function M.workflows()
   })
 end
 
+function M.daemon_workflows()
+  local obj = vim.system({ "pkm", "workflow", "list" }, { text = true }):wait()
+  if obj.code ~= 0 then
+    util.notify("Failed to list workflows: " .. (obj.stderr or ""), vim.log.levels.ERROR)
+    return
+  end
+
+  local parsed = util.json_decode(obj.stdout)
+  if not parsed or #parsed == 0 then
+    util.notify("No daemon workflows found", vim.log.levels.WARN)
+    return
+  end
+
+  local items = {}
+  for _, wf in ipairs(parsed) do
+    table.insert(items, {
+      text = wf.id,
+      desc = wf.schedule_hour and ("hour: " .. wf.schedule_hour) or "",
+      id = wf.id,
+    })
+  end
+
+  snacks_picker("PKM Daemon Workflows", items, {
+    confirm = function(picker, item)
+      picker:close()
+      if not item then
+        return
+      end
+      vim.system({ "pkm", "workflow", "run", item.id }, { text = true }, function(res)
+        vim.schedule(function()
+          if res.code == 0 then
+            local msg = vim.trim(res.stdout)
+            util.notify(msg ~= "" and msg or ("Queued: " .. item.id), vim.log.levels.INFO)
+          else
+            util.notify("Failed to run '" .. item.id .. "': " .. (res.stderr or ""), vim.log.levels.ERROR)
+          end
+        end)
+      end)
+    end,
+  })
+end
+
 function M.chat_toggle()
   chat.toggle()
 end

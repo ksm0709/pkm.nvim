@@ -2,7 +2,8 @@
 
 exec 1>&2
 
-export PATH="$PWD/.rocks/bin:$HOME/.cargo/bin:$PATH"
+REPO_ROOT=$(dirname "$(git rev-parse --git-common-dir 2>/dev/null || echo "$PWD/.git")")
+export PATH="$REPO_ROOT/.rocks/bin:$HOME/.cargo/bin:$PATH"
 
 if git diff --quiet HEAD; then
     exit 0

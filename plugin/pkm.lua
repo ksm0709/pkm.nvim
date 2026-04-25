@@ -39,7 +39,7 @@ local function pkm_command(opts)
   elseif cmd == "index" then
     require("pkm.picker").index()
   elseif cmd == "workflows" then
-    require("pkm.picker").workflows()
+    require("pkm.picker").daemon_workflows()
   elseif cmd == "chat" then
     require("pkm.picker").chat_toggle()
   else
@@ -94,8 +94,8 @@ map("n", "<Leader>pa", function()
   require("pkm.chat").toggle()
 end, "PKM Chat")
 map("n", "<Leader>pw", function()
-  require("pkm.picker").workflows()
-end, "PKM Workflows")
+  require("pkm.picker").daemon_workflows()
+end, "PKM Daemon Workflows")
 map("n", "<Leader>pg", function()
   require("pkm.picker").grep()
 end, "PKM Grep")
