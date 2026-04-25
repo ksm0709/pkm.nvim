@@ -65,6 +65,19 @@ local function current_vault()
   return vault.get()
 end
 
+local function vault_from_path(path)
+  if not path or path == "" then
+    return nil
+  end
+  local vaults = vault.list()
+  for _, v in ipairs(vaults) do
+    if v.path and path:sub(1, #v.path) == v.path then
+      return v
+    end
+  end
+  return nil
+end
+
 local function ensure_vault_path()
   local current = current_vault()
   if current and current.path then
@@ -283,8 +296,9 @@ end
 function M.links(title)
   local snacks = require("snacks")
   local buf_name = vim.api.nvim_buf_get_name(0)
-  local current = current_vault()
+  local current = vault_from_path(buf_name) or current_vault()
   local vault_name = current and current.name or nil
+  local v_path = (current and current.path) or ensure_vault_path()
 
   local target_note = title
   if not target_note or target_note == "" then
@@ -309,7 +323,6 @@ function M.links(title)
 
     local items = {}
     local function add_nodes(nodes, direction)
-      local v_path = ensure_vault_path()
       for _, node in ipairs(nodes or {}) do
         -- extract info
         local name = node.title or node.note_id
@@ -357,7 +370,6 @@ function M.links(title)
             return
           end
 
-          local v_path = ensure_vault_path()
           if item.node_type == "tag" then
             local tag_name = item.text
             local path = util.join_path(v_path, "tags", tag_name .. ".md")
