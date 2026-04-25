@@ -221,6 +221,12 @@ function M.stream_workflow(name, prompt)
   })
 end
 
+function M.stream_cmd(title, args)
+  M.open()
+  append_text(state.stdout_buf, ("\n[%s]\n"):format(title))
+  run_stream(args, title)
+end
+
 function M.append(text)
   M.open()
   append_text(state.stdout_buf, text)

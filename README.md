@@ -1,3 +1,5 @@
+- Updated `<leader>pw` daemon workflow execution to stream output in the right chat panel via `chat.stream_cmd`
+- Added `chat.stream_cmd(title, args)` to stream arbitrary pkm CLI commands into the chat panel
 - Updated `<leader>pw` and `:Pkm workflows` to list and run PKM daemon workflows via `pkm workflow list/run`
 - Updated `<leader>pl` to display graph neighbors (inbound, outbound, semantic) using a static picker
 - Added `require('pkm').statusline()` function to display active vault
