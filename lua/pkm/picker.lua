@@ -173,13 +173,18 @@ function M.search(query)
           if async then
             async:resume()
           end
-        end, nil, { notify_msg = false, vault = vault_name })
+        end, function(err)
+          results = { error = true }
+          if async then
+            async:resume()
+          end
+        end, { notify_msg = false, vault = vault_name })
 
         if async then
           async:suspend()
         end
 
-        if results then
+        if results and not results.error then
           local parsed = util.json_decode(results.stdout)
           if parsed and parsed.results then
             for _, item in ipairs(build_result_items(parsed.results)) do
@@ -238,13 +243,18 @@ function M.tags()
           if async then
             async:resume()
           end
-        end, nil, { notify_msg = false, vault = vault_name })
+        end, function(err)
+          results = { error = true }
+          if async then
+            async:resume()
+          end
+        end, { notify_msg = false, vault = vault_name })
 
         if async then
           async:suspend()
         end
 
-        if results then
+        if results and not results.error then
           local parsed = util.json_decode(results.stdout)
           if parsed and parsed.results then
             for _, result in ipairs(parsed.results) do
@@ -287,6 +297,10 @@ function M.links(title)
   end
 
   cli.graph_neighbors(target_note, function(res)
+    if not res or res.error then
+      util.notify("Failed to get graph neighbors", vim.log.levels.ERROR)
+      return
+    end
     local parsed = util.json_decode(res.stdout)
     if not parsed then
       util.notify("Failed to parse graph neighbors", vim.log.levels.ERROR)
@@ -374,7 +388,9 @@ function M.links(title)
         end,
       },
     })
-  end, nil, { notify_msg = false, vault = vault_name })
+  end, function(err)
+    util.notify("Failed to get graph neighbors: " .. tostring(err), vim.log.levels.ERROR)
+  end, { notify_msg = false, vault = vault_name })
 end
 
 function M.vaults()
