@@ -1,3 +1,4 @@
+- Fixed statusline vault name display: use `pkm vault list` active name instead of path basename; added 5 statusline tests and `vim.loop` stub
 - Updated `/subnote` slash command: opens created sub-note buffer and simplifies name from `/add-subnote`; Tab/CR now navigate and accept completion popup
 - Updated `<leader>pw` daemon workflow execution to stream output in the right chat panel via `chat.stream_cmd`
 - Added `chat.stream_cmd(title, args)` to stream arbitrary pkm CLI commands into the chat panel

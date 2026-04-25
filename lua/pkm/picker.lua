@@ -330,10 +330,12 @@ function M.links(title)
       local path = util.join_path(v_path, "tags", item.text .. ".md")
       if not util.file_exists(path) then
         vim.schedule(function()
-          vim.system(
-            { "pkm", "tags", "edit", item.text },
-            { text = true, env = vim.tbl_extend("force", vim.fn.environ(), { EDITOR = "true" }) }
-          ):wait()
+          vim
+            .system(
+              { "pkm", "tags", "edit", item.text },
+              { text = true, env = vim.tbl_extend("force", vim.fn.environ(), { EDITOR = "true" }) }
+            )
+            :wait()
           open_path(path)
         end)
       else

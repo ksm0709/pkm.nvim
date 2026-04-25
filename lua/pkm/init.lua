@@ -45,16 +45,19 @@ function M.statusline()
     _statusline_fetching = true
     _statusline_last_try = now
 
-    require("pkm.cli").exec({ "vault", "where" }, {
+    require("pkm.cli").exec({ "vault", "list" }, {
       vault = false,
       on_success = function(res)
-        local path = require("pkm.util").trim(res.stdout)
-        if path ~= "" then
-          local name = vim.fn.fnamemodify(path, ":t")
-          require("pkm.vault").set({ name = name, path = path })
-          vim.cmd("redrawstatus")
+        local parsed = require("pkm.util").json_decode(res.stdout)
+        if parsed and parsed.vaults then
+          for _, v in ipairs(parsed.vaults) do
+            if v.active and v.name and v.name ~= "" then
+              require("pkm.vault").set({ name = v.name, path = v.path })
+              vim.cmd("redrawstatus")
+              break
+            end
+          end
         end
-        -- Allow refetching if it was empty, but cooldown protects it
         _statusline_fetching = false
       end,
       on_error = function()

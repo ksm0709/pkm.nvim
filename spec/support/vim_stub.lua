@@ -121,6 +121,7 @@ function M.new(opts)
     health = {},
     current_win = 1,
     current_buf = 1,
+    time = opts.time or 10000,
   }
 
   state.buffers[1] = { valid = true, name = "", lines = { "" } }
@@ -130,6 +131,11 @@ function M.new(opts)
     g = {},
     o = { columns = opts.columns or 120, lines = opts.lines or 40 },
     log = { levels = { INFO = 1, WARN = 2, ERROR = 3 } },
+    loop = {
+      now = function()
+        return state.time
+      end,
+    },
   }
 
   function vim.notify(message, level, notify_opts)
