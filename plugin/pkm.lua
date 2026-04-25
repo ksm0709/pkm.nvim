@@ -134,3 +134,19 @@ vim.api.nvim_create_autocmd("DirChanged", {
   end,
   desc = "Refresh PKM vault on directory change",
 })
+
+vim.api.nvim_create_autocmd("BufEnter", {
+  callback = function()
+    local file = vim.api.nvim_buf_get_name(0)
+    if file == "" then
+      return
+    end
+    local current = require("pkm.vault").current
+    if current and current.path and vim.startswith(file, current.path .. "/") then
+      return
+    end
+    require("pkm").vault_invalidate()
+    vim.cmd("redrawstatus")
+  end,
+  desc = "Refresh PKM vault when entering a buffer outside the current vault",
+})

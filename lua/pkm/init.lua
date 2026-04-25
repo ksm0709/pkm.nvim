@@ -56,21 +56,33 @@ function M.statusline()
       on_success = function(res)
         local parsed = require("pkm.util").json_decode(res.stdout)
         if parsed and parsed.vaults then
+          local buffile = vim.api.nvim_buf_get_name(0)
           local cwd = vim.fn.getcwd()
           local matched = nil
           local matched_len = 0
 
-          for _, v in ipairs(parsed.vaults) do
-            if v.path and v.name and v.name ~= "" then
-              if cwd == v.path or vim.startswith(cwd, v.path .. "/") then
-                if #v.path > matched_len then
-                  matched = v
-                  matched_len = #v.path
+          local function try_match(path)
+            for _, v in ipairs(parsed.vaults) do
+              if v.path and v.name and v.name ~= "" then
+                if path == v.path or vim.startswith(path, v.path .. "/") then
+                  if #v.path > matched_len then
+                    matched = v
+                    matched_len = #v.path
+                  end
                 end
               end
             end
           end
 
+          -- buffer path is most specific (the file being edited)
+          if buffile and buffile ~= "" then
+            try_match(buffile)
+          end
+          -- fall back to CWD if buffer gave no match
+          if not matched then
+            try_match(cwd)
+          end
+          -- final fallback: active:true vault from CLI
           if not matched then
             for _, v in ipairs(parsed.vaults) do
               if v.active and v.name and v.name ~= "" then

@@ -220,6 +220,55 @@ describe("pkm.init", function()
       -- Child vault path is longer and more specific
       assert.are.equal("CHILD_VAULT", require("pkm.vault").current and require("pkm.vault").current.name)
     end)
+
+    it("prefers buffer path over CWD when buffer is inside a vault", function()
+      -- CWD matches vault-a, but the open buffer is inside vault-b
+      state.cwd = "/tmp/pkm-test-vaults/temp-vault-a"
+      state.buffers[1] = { name = "/tmp/pkm-test-vaults/temp-vault-b/daily/note.md", lines = { "" } }
+      state.system_handler = function(cmd)
+        if table.concat(cmd, " ") == "pkm vault list" then
+          return {
+            code = 0,
+            stdout = json.encode({
+              vaults = {
+                { name = "TEMP_VAULT_A", path = "/tmp/pkm-test-vaults/temp-vault-a", active = true },
+                { name = "TEMP_VAULT_B", path = "/tmp/pkm-test-vaults/temp-vault-b", active = false },
+              },
+            }),
+            stderr = "",
+          }
+        end
+        return { code = 0, stdout = "", stderr = "" }
+      end
+
+      require("pkm.vault").current = nil
+      pkm.statusline()
+      -- Buffer path wins over CWD
+      assert.are.equal("TEMP_VAULT_B", require("pkm.vault").current and require("pkm.vault").current.name)
+    end)
+
+    it("falls back to CWD when buffer path is empty", function()
+      state.cwd = "/tmp/pkm-test-vaults/temp-vault-a"
+      state.buffers[1] = { name = "", lines = { "" } }
+      state.system_handler = function(cmd)
+        if table.concat(cmd, " ") == "pkm vault list" then
+          return {
+            code = 0,
+            stdout = json.encode({
+              vaults = {
+                { name = "TEMP_VAULT_A", path = "/tmp/pkm-test-vaults/temp-vault-a", active = false },
+              },
+            }),
+            stderr = "",
+          }
+        end
+        return { code = 0, stdout = "", stderr = "" }
+      end
+
+      require("pkm.vault").current = nil
+      pkm.statusline()
+      assert.are.equal("TEMP_VAULT_A", require("pkm.vault").current and require("pkm.vault").current.name)
+    end)
   end)
 
   describe("vault_invalidate", function()
