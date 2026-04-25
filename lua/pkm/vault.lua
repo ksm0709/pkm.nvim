@@ -4,6 +4,7 @@ local cli = require("pkm.cli")
 local util = require("pkm.util")
 
 M.current = nil
+M._switching = false
 
 local function resolve_from_list(vaults, hint)
   if not vaults then
@@ -141,11 +142,12 @@ function M.switch(name)
     return false, res
   end
 
+  M._switching = true
   if target.path then
     vim.cmd("cd " .. vim.fn.fnameescape(target.path))
   end
-
   M.set(target)
+  M._switching = false
   return true, target
 end
 

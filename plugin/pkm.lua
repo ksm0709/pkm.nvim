@@ -123,3 +123,14 @@ end, "PKM Tags")
 map("n", "<Leader>pl", function()
   require("pkm.picker").links()
 end, "PKM Links")
+
+vim.api.nvim_create_autocmd("DirChanged", {
+  callback = function()
+    if require("pkm.vault")._switching then
+      return
+    end
+    require("pkm").vault_invalidate()
+    vim.cmd("redrawstatus")
+  end,
+  desc = "Refresh PKM vault on directory change",
+})

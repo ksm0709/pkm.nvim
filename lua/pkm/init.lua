@@ -34,6 +34,12 @@ end
 local _statusline_fetching = false
 local _statusline_last_try = 0
 
+function M.vault_invalidate()
+  require("pkm.vault").current = nil
+  _statusline_fetching = false
+  _statusline_last_try = 0
+end
+
 function M.statusline()
   local vault = require("pkm.vault").current
   if vault and vault.name then

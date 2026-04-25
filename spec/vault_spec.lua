@@ -81,6 +81,43 @@ describe("pkm.vault", function()
     assert.are.equal("TEMP_VAULT_A", target.name)
     assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a", state.cwd)
     assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a", target.path)
+    -- _switching must be false after switch completes
+    assert.is_false(vault._switching)
+  end)
+
+  it("sets _switching=true during cd to suppress DirChanged invalidation", function()
+    state.system_handler = function(cmd)
+      local joined = table.concat(cmd, " ")
+      if joined == "pkm vault list" then
+        return {
+          code = 0,
+          stdout = json.encode({
+            vaults = { { name = "TEMP_VAULT_A", path = "/tmp/pkm-test-vaults/temp-vault-a", active = false } },
+          }),
+          stderr = "",
+        }
+      end
+      if joined == "pkm vault open TEMP_VAULT_A" then
+        return { code = 0, stdout = "", stderr = "" }
+      end
+      return { code = 0, stdout = "", stderr = "" }
+    end
+
+    local switching_during_cd = nil
+    -- Override vim.cmd to capture _switching state at the moment of cd
+    local orig_cmd = vim.cmd
+    vim.cmd = function(c)
+      if type(c) == "string" and c:match("^cd ") then
+        switching_during_cd = vault._switching
+      end
+      return orig_cmd(c)
+    end
+
+    vault.switch("/tmp/pkm-test-vaults/temp-vault-a")
+
+    vim.cmd = orig_cmd
+    assert.is_true(switching_during_cd)
+    assert.is_false(vault._switching)
   end)
 
   it("builds note paths and opens daily/sub notes", function()

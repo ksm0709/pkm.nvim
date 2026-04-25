@@ -128,4 +128,59 @@ describe("pkm.init", function()
       assert.is_nil(require("pkm.vault").current)
     end)
   end)
+
+  describe("vault_invalidate", function()
+    before_each(function()
+      vim, state = stub.new()
+      _G.vim = vim
+      package.loaded["pkm"] = nil
+      package.loaded["pkm.vault"] = nil
+      pkm = require("pkm")
+    end)
+
+    it("clears vault.current and resets statusline fetch state", function()
+      require("pkm.vault").current = { name = "TEMP_VAULT_A", path = "/tmp/a" }
+      pkm.vault_invalidate()
+      assert.is_nil(require("pkm.vault").current)
+    end)
+
+    it("allows immediate re-fetch after invalidation", function()
+      state.system_handler = function(cmd)
+        if table.concat(cmd, " ") == "pkm vault list" then
+          return {
+            code = 0,
+            stdout = require("dkjson").encode({
+              vaults = { { name = "TEMP_VAULT_B", path = "/tmp/b", active = true } },
+            }),
+            stderr = "",
+          }
+        end
+        return { code = 0, stdout = "", stderr = "" }
+      end
+
+      -- Simulate a previous fetch that set the cooldown
+      require("pkm.vault").current = nil
+      state.time = 10000
+      pkm.statusline() -- triggers fetch, sets vault.current
+      assert.are.equal("TEMP_VAULT_B", require("pkm.vault").current and require("pkm.vault").current.name)
+
+      -- Invalidate resets cooldown so next statusline call can fetch again
+      pkm.vault_invalidate()
+      state.time = 11000 -- only 1s later (within old 5s cooldown)
+      state.system_handler = function(cmd)
+        if table.concat(cmd, " ") == "pkm vault list" then
+          return {
+            code = 0,
+            stdout = require("dkjson").encode({
+              vaults = { { name = "TEMP_VAULT_C", path = "/tmp/c", active = true } },
+            }),
+            stderr = "",
+          }
+        end
+        return { code = 0, stdout = "", stderr = "" }
+      end
+      pkm.statusline() -- should fetch immediately after invalidate
+      assert.are.equal("TEMP_VAULT_C", require("pkm.vault").current and require("pkm.vault").current.name)
+    end)
+  end)
 end)
