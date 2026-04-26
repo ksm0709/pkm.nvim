@@ -291,7 +291,7 @@ end
 
 function M.daily_sub(title, on_success, on_error, opts)
   exec_async(
-    { "daily", "add", "--sub", title },
+    { "daily", "subnote", title },
     vim.tbl_extend("force", {
       notify_msg = "Creating daily sub-note...",
       on_success = on_success,

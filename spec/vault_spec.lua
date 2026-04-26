@@ -121,11 +121,13 @@ describe("pkm.vault", function()
   end)
 
   it("builds note paths and opens daily/sub notes", function()
+    local today = os.date("%Y-%m-%d")
+    local today_escaped = today:gsub("%-", "%%-")
     local current = { name = "TEMP_VAULT_A", path = "/tmp/pkm-test-vaults/temp-vault-a" }
     assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a/daily/2026-04-25.md", vault.daily_path(current, "2026-04-25"))
     assert.are.equal("/tmp/pkm-test-vaults/temp-vault-a/notes/foo-bar.md", vault.note_path(current, "Foo Bar"))
     assert.are.equal(
-      "/tmp/pkm-test-vaults/temp-vault-a/daily/2026-04-25-foo-bar.md",
+      "/tmp/pkm-test-vaults/temp-vault-a/daily/" .. today .. "-foo-bar.md",
       vault.sub_daily_path(current, "Foo Bar")
     )
 
@@ -133,10 +135,10 @@ describe("pkm.vault", function()
     assert.are.equal("edit /tmp/example.md", state.commands[#state.commands])
 
     vault.open_daily(current)
-    assert.is_true(state.commands[#state.commands]:match("daily/2026%-04%-25%.md") ~= nil)
+    assert.is_true(state.commands[#state.commands]:match("daily/" .. today_escaped .. "%.md") ~= nil)
 
     vault.open_sub_daily(current, "Foo Bar")
-    assert.is_true(state.commands[#state.commands]:match("2026%-04%-25%-foo%-bar%.md") ~= nil)
+    assert.is_true(state.commands[#state.commands]:match(today_escaped .. "%-foo%-bar%.md") ~= nil)
   end)
 
   it("resolves names, refreshes the cache, and reports missing daily paths", function()
@@ -182,7 +184,7 @@ describe("pkm.vault", function()
     vault.open_daily({ path = "" })
     assert.are.equal("Unable to resolve daily note path", state.notifications[#state.notifications].message)
 
-    local existing = "/tmp/pkm-test-vaults/temp-vault-a/daily/2026-04-25-foo-bar.md"
+    local existing = "/tmp/pkm-test-vaults/temp-vault-a/daily/" .. os.date("%Y-%m-%d") .. "-foo-bar.md"
     state.files[existing] = { "# note" }
     vault.open_sub_daily({ name = "TEMP_VAULT_A", path = "/tmp/pkm-test-vaults/temp-vault-a" }, "Foo Bar")
     assert.are.equal("edit " .. existing, state.commands[#state.commands])
