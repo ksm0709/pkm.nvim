@@ -85,6 +85,16 @@ map("n", "<Leader>pd", function()
   require("pkm.daily").toggle()
 end, "PKM Daily Note")
 map("n", "<Leader>pD", function()
+  local vault = require("pkm.vault")
+  local v = vault.get()
+  if not v or not v.path then
+    vim.notify("PKM: No vault found", vim.log.levels.ERROR, { title = "PKM" })
+    return
+  end
+  vault.open_daily(v)
+  vim.cmd("cd " .. vim.fn.fnameescape(v.path))
+end, "PKM Open Daily & cd to vault")
+map("n", "<Leader>pS", function()
   require("pkm.picker").daily_sub()
 end, "PKM New Daily Sub-note")
 map("n", "<Leader>pv", function()
