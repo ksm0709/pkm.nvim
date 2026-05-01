@@ -5,6 +5,18 @@ Versions follow [Semantic Versioning](https://semver.org). Release notes are aut
 
 ---
 
+## [v0.12.1] — 2026-05-01
+
+### [0.12.1](https://github.com/ksm0709/pkm.nvim/compare/v0.12.0...v0.12.1) (2026-05-01)
+
+
+### Documentation
+
+* restructure README and add CHANGELOG with auto-release workflow ([2c111a5](https://github.com/ksm0709/pkm.nvim/commit/2c111a51a7c9e150fe03cbecf8120ab74a725fcc))
+
+
+---
+
 ## [Unreleased]
 
 ### Features
