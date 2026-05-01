@@ -13,14 +13,63 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0
+
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Create a GitHub release
+
+      - name: Update CHANGELOG.md
+        if: steps.tag_version.outputs.new_tag != ''
+        env:
+          NEW_TAG: ${{ steps.tag_version.outputs.new_tag }}
+          CHANGELOG_BODY: ${{ steps.tag_version.outputs.changelog }}
+        run: |
+          python3 - << 'EOF'
+          import os
+          from datetime import date
+
+          tag = os.environ['NEW_TAG']
+          body = os.environ['CHANGELOG_BODY']
+          today = date.today().strftime('%Y-%m-%d')
+
+          new_entry = f"## [{tag}] — {today}\n\n{body}\n---\n\n"
+
+          try:
+              with open('CHANGELOG.md', 'r') as f:
+                  existing = f.read()
+          except FileNotFoundError:
+              existing = "# Changelog\n\n"
+
+          # Insert new entry after the first blank line following the title block
+          marker = "---\n\n"
+          idx = existing.find(marker)
+          if idx != -1:
+              insert_at = idx + len(marker)
+              content = existing[:insert_at] + new_entry + existing[insert_at:]
+          else:
+              content = existing.rstrip('\n') + '\n\n' + new_entry
+
+          with open('CHANGELOG.md', 'w') as f:
+              f.write(content)
+
+          print(f"Inserted {tag} into CHANGELOG.md")
+          EOF
+
+      - name: Commit CHANGELOG.md
+        if: steps.tag_version.outputs.new_tag != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git diff --staged --quiet || git commit -m "chore(release): update CHANGELOG.md for ${{ steps.tag_version.outputs.new_tag }} [skip ci]"
+          git push
+
+      - name: Create GitHub release
+        if: steps.tag_version.outputs.new_tag != ''
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
